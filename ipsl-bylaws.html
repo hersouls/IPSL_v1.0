@@ -4,6 +4,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <!-- PWA -->
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#1e1b4b">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="IPSL">
+  <link rel="apple-touch-icon" href="/icons/icon-192x192.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192x192.png">
   <title>IPSL 대학원 졸업생 모임 - 회칙 및 운영 관리</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
@@ -1564,7 +1572,7 @@
     (function () {
       const s = localStorage.getItem(DM_KEY);
       const p = window.matchMedia('(prefers-color-scheme:dark)').matches;
-      if (s === 'dark' || (!s && p)) document.documentElement.classList.add('dark');
+      if (s === 'dark') document.documentElement.classList.add('dark');
     })();
     function initDarkMode() {
       updateDMIcon();
@@ -3204,6 +3212,13 @@
 
       alert('모든 데이터가 초기화되었습니다.');
       location.reload();
+    }
+  </script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js')
+        .then(reg => console.log('[PWA] SW registered, scope:', reg.scope))
+        .catch(err => console.warn('[PWA] SW registration failed:', err));
     }
   </script>
 </body>
