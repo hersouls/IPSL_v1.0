@@ -1,0 +1,10 @@
+node_modules/
+.env
+.env.local
+.env.*.local
+.vercel/
+.claude/
+.playwright-mcp/
+NUL
+Thumbs.db
+.DS_Store

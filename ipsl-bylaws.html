@@ -1,0 +1,3044 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>IPSL 대학원 졸업생 모임 - 회칙 및 운영 관리</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Pretendard', '-apple-system', 'BlinkMacSystemFont', 'system-ui', 'sans-serif'],
+          },
+          colors: {
+            navy: {
+              50: '#eef2ff',
+              100: '#e0e7ff',
+              200: '#c7d2fe',
+              300: '#a5b4fc',
+              400: '#818cf8',
+              500: '#6366f1',
+              600: '#4f46e5',
+              700: '#4338ca',
+              800: '#3730a3',
+              900: '#312e81',
+              950: '#1e1b4b',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    * {
+      font-family: 'Pretendard', sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    @keyframes fadeIn {
+      0% {
+        opacity: 0;
+      }
+
+      100% {
+        opacity: 1;
+      }
+    }
+
+    @keyframes slideUp {
+      0% {
+        opacity: 0;
+        transform: translateY(12px);
+      }
+
+      100% {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes slideInFromBottom {
+      0% {
+        transform: translateY(100%);
+        opacity: 1;
+      }
+
+      100% {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+
+    .animate-fade-in {
+      animation: fadeIn 0.2s ease-out;
+    }
+
+    .animate-slide-up {
+      animation: slideUp 0.4s ease-out forwards;
+    }
+
+    .tabular-nums {
+      font-variant-numeric: tabular-nums;
+    }
+
+    .hide-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+
+    .hide-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+
+    .glass {
+      background: rgba(255, 255, 255, 0.88);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+    }
+
+    .dark .glass {
+      background: rgba(15, 15, 30, 0.88);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .card-hover {
+      transition: all 0.2s ease;
+    }
+
+    .card-hover:hover {
+      border-color: #818cf8;
+      box-shadow: 0 4px 16px rgba(99, 102, 241, 0.1);
+    }
+
+    .dark .card-hover:hover {
+      border-color: #6366f1;
+      box-shadow: 0 4px 16px rgba(99, 102, 241, 0.2);
+    }
+
+    .modal-backdrop {
+      background: rgba(0, 0, 0, 0.45);
+      backdrop-filter: blur(2px);
+      -webkit-backdrop-filter: blur(2px);
+    }
+
+    .modal-sheet {
+      transform: translateY(100%);
+      opacity: 1;
+    }
+
+    @media (min-width: 640px) {
+      .modal-sheet {
+        transform: translateY(20px);
+        opacity: 0;
+      }
+    }
+
+    .modal-sheet.modal-open {
+      transform: translateY(0);
+      opacity: 1;
+    }
+
+    .hero-bg {
+      background: linear-gradient(160deg, #1e1b4b 0%, #312e81 30%, #3730a3 60%, #1e1b4b 100%);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero-bg::before {
+      content: '';
+      position: absolute;
+      inset: -50%;
+      background: radial-gradient(ellipse at 25% 40%, rgba(99, 102, 241, 0.1) 0%, transparent 50%),
+        radial-gradient(ellipse at 75% 25%, rgba(165, 180, 252, 0.06) 0%, transparent 40%);
+    }
+
+    .hero-bg::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(99, 102, 241, 0.3), rgba(165, 180, 252, 0.2), transparent);
+    }
+
+    .accent-bar {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      border-radius: 14px 14px 0 0;
+    }
+
+    .bar-navy {
+      background: linear-gradient(90deg, #4338ca, #818cf8);
+    }
+
+    .bar-indigo {
+      background: linear-gradient(90deg, #4338ca, #818cf8);
+    }
+
+    .bar-blue {
+      background: linear-gradient(90deg, #4338ca, #818cf8);
+    }
+
+    .bar-teal {
+      background: linear-gradient(90deg, #4338ca, #818cf8);
+    }
+
+    .bar-amber {
+      background: linear-gradient(90deg, #4338ca, #818cf8);
+    }
+
+    .bar-rose {
+      background: linear-gradient(90deg, #4338ca, #818cf8);
+    }
+
+    .bar-emerald {
+      background: linear-gradient(90deg, #4338ca, #818cf8);
+    }
+
+    .bar-violet {
+      background: linear-gradient(90deg, #4338ca, #818cf8);
+    }
+
+    .bar-cyan {
+      background: linear-gradient(90deg, #4338ca, #818cf8);
+    }
+
+    .badge-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 11px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 9px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.03em;
+    }
+
+    .budget-bar {
+      height: 8px;
+      border-radius: 4px;
+      background: #e9ecf1;
+      overflow: hidden;
+    }
+
+    .dark .budget-bar {
+      background: #27272a;
+    }
+
+    .budget-fill {
+      height: 100%;
+      border-radius: 4px;
+      transition: width 0.6s ease;
+    }
+
+    .budget-bar-dual {
+      height: 10px;
+      border-radius: 5px;
+      background: #e9ecf1;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .dark .budget-bar-dual {
+      background: #27272a;
+    }
+
+    .budget-bar-dual .bar-budget {
+      position: absolute;
+      inset: 0;
+      border-radius: 5px;
+      opacity: 0.25;
+      transition: width 0.6s ease;
+    }
+
+    .budget-bar-dual .bar-spent {
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      border-radius: 5px;
+      transition: width 0.6s ease;
+    }
+
+    .tab-active {
+      color: #4f46e5;
+      border-bottom: 2px solid #4f46e5;
+    }
+
+    .dark .tab-active {
+      color: #818cf8;
+      border-bottom-color: #818cf8;
+    }
+
+
+
+    .fi.visible {
+      animation: slideUp 0.5s ease forwards;
+    }
+
+    .status-paid {
+      background: #ecfdf5;
+      color: #059669;
+    }
+
+    .dark .status-paid {
+      background: rgba(5, 150, 105, 0.15);
+      color: #6ee7b7;
+    }
+
+    .status-unpaid {
+      background: #fef2f2;
+      color: #dc2626;
+    }
+
+    .dark .status-unpaid {
+      background: rgba(220, 38, 38, 0.15);
+      color: #fca5a5;
+    }
+
+    input[type="number"] {
+      text-align: right;
+    }
+
+    @media print {
+      .no-print {
+        display: none !important;
+      }
+
+      .card,
+      section {
+        break-inside: avoid;
+        box-shadow: none;
+      }
+
+      body {
+        background: #fff;
+      }
+    }
+  </style>
+</head>
+
+<body
+  class="bg-zinc-50 dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 min-h-screen flex flex-col transition-colors duration-200">
+
+  <!-- ====== HERO ====== -->
+  <header class="hero-bg text-white no-print">
+    <div class="relative z-10 max-w-4xl mx-auto px-5 pt-10 pb-12 sm:pt-14 sm:pb-16">
+      <div class="flex items-center gap-2.5 mb-4">
+        <div class="w-9 h-9 rounded-xl bg-white/10 flex items-center justify-center border border-white/10">
+          <i data-lucide="scroll-text" class="w-[18px] h-[18px] text-navy-300"></i>
+        </div>
+        <a href="https://sites.google.com/view/powerinha/home?authuser=0" target="_blank"
+          class="tag bg-white/10 text-navy-200 border border-white/10 hover:bg-white/20 transition-colors">IPSL
+          Alumni</a>
+      </div>
+      <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight leading-snug">
+        IPSL 대학원 졸업생 모임<br>
+        <span class="text-navy-300">회칙 및 운영 관리 시스템</span>
+      </h1>
+      <p class="text-slate-400 text-sm leading-relaxed max-w-xl mt-3">
+        회원 관리, 회비 운영, 내역 관리를 위한 통합 플랫폼입니다. 투명한 운영과 지속 가능한 친목 도모를 목적으로 합니다.
+      </p>
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-7">
+        <div onclick="switchTab('statements')"
+          class="bg-white/[0.06] border border-white/10 rounded-xl px-4 py-3 text-center cursor-pointer hover:bg-white/10 transition-colors">
+          <div class="tabular-nums text-xl font-extrabold text-white" id="heroTotalExpense">0<span
+              class="text-xs font-semibold text-slate-400 ml-0.5">만 원</span></div>
+          <div class="text-[11px] text-slate-500 mt-0.5">연간 총 집행금액</div>
+        </div>
+        <div onclick="switchTab('members')"
+          class="bg-white/[0.06] border border-white/10 rounded-xl px-4 py-3 text-center cursor-pointer hover:bg-white/10 transition-colors">
+          <div class="tabular-nums text-xl font-extrabold text-white" id="heroMemberCount">0<span
+              class="text-xs font-semibold text-slate-400 ml-0.5">명</span></div>
+          <div class="text-[11px] text-slate-500 mt-0.5">등록 회원수</div>
+        </div>
+        <div onclick="switchTab('fees')"
+          class="bg-white/[0.06] border border-white/10 rounded-xl px-4 py-3 text-center cursor-pointer hover:bg-white/10 transition-colors">
+          <div class="tabular-nums text-xl font-extrabold text-white" id="heroTotalIncome">0<span
+              class="text-xs font-semibold text-slate-400 ml-0.5">만 원</span></div>
+          <div class="text-[11px] text-slate-500 mt-0.5">연간 납부회비 총액</div>
+        </div>
+        <div onclick="switchTab('fees')"
+          class="bg-white/[0.06] border border-white/10 rounded-xl px-4 py-3 text-center cursor-pointer hover:bg-white/10 transition-colors">
+          <div class="tabular-nums text-xl font-extrabold text-white" id="heroTotalUnpaid">0<span
+              class="text-xs font-semibold text-slate-400 ml-0.5">만 원</span></div>
+          <div class="text-[11px] text-slate-500 mt-0.5">미납 회비 총액</div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ====== STICKY NAV ====== -->
+  <nav class="sticky top-0 z-50 glass no-print">
+    <div class="max-w-4xl mx-auto px-5">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-1 overflow-x-auto hide-scrollbar py-1">
+          <button onclick="switchTab('bylaws')" id="tabBylaws"
+            class="flex items-center gap-1.5 px-3 py-2.5 text-xs font-semibold whitespace-nowrap transition-all border-b-2 border-transparent text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200 tab-active">
+            <i data-lucide="scroll-text" class="w-3.5 h-3.5"></i>회칙
+          </button>
+          <button onclick="switchTab('members')" id="tabMembers"
+            class="flex items-center gap-1.5 px-3 py-2.5 text-xs font-semibold whitespace-nowrap transition-all border-b-2 border-transparent text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200">
+            <i data-lucide="users" class="w-3.5 h-3.5"></i>회원명부
+          </button>
+          <button onclick="switchTab('fees')" id="tabFees"
+            class="flex items-center gap-1.5 px-3 py-2.5 text-xs font-semibold whitespace-nowrap transition-all border-b-2 border-transparent text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200">
+            <i data-lucide="wallet" class="w-3.5 h-3.5"></i>회비관리
+          </button>
+          <button onclick="switchTab('support')" id="tabSupport"
+            class="flex items-center gap-1.5 px-3 py-2.5 text-xs font-semibold whitespace-nowrap transition-all border-b-2 border-transparent text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200">
+            <i data-lucide="hand-heart" class="w-3.5 h-3.5"></i>지원관리
+          </button>
+          <button onclick="switchTab('statements')" id="tabStatements"
+            class="flex items-center gap-1.5 px-3 py-2.5 text-xs font-semibold whitespace-nowrap transition-all border-b-2 border-transparent text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200">
+            <i data-lucide="file-bar-chart" class="w-3.5 h-3.5"></i>회비 내역서
+          </button>
+        </div>
+        <div class="flex items-center gap-1">
+          <button onclick="openSettingsModal()"
+            class="p-2 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors flex-shrink-0" title="설정">
+            <i data-lucide="settings" class="w-4 h-4 text-zinc-500 dark:text-zinc-400"></i>
+          </button>
+          <button onclick="toggleDarkMode()"
+            class="p-2 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors flex-shrink-0"
+            title="다크모드 전환">
+            <i id="darkModeIcon" data-lucide="sun" class="w-4 h-4 text-zinc-500 dark:text-zinc-400"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ====== TAB: 회칙 ====== -->
+  <main id="panelBylaws" class="max-w-4xl mx-auto px-5 py-8 space-y-6 w-full">
+
+    <!-- Sub-nav for bylaws sections -->
+    <div class="flex items-center gap-1 overflow-x-auto hide-scrollbar no-print pb-1">
+      <a href="#s1"
+        class="bylaws-pill px-3 py-1.5 rounded-lg text-[11px] font-semibold text-zinc-500 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 whitespace-nowrap transition-all">임원진</a>
+      <a href="#s2"
+        class="bylaws-pill px-3 py-1.5 rounded-lg text-[11px] font-semibold text-zinc-500 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 whitespace-nowrap transition-all">회비</a>
+      <a href="#s3"
+        class="bylaws-pill px-3 py-1.5 rounded-lg text-[11px] font-semibold text-zinc-500 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 whitespace-nowrap transition-all">경조사</a>
+      <a href="#s4"
+        class="bylaws-pill px-3 py-1.5 rounded-lg text-[11px] font-semibold text-zinc-500 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 whitespace-nowrap transition-all">소모임</a>
+      <a href="#s5"
+        class="bylaws-pill px-3 py-1.5 rounded-lg text-[11px] font-semibold text-zinc-500 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 whitespace-nowrap transition-all">홈커밍</a>
+      <a href="#s6"
+        class="bylaws-pill px-3 py-1.5 rounded-lg text-[11px] font-semibold text-zinc-500 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 whitespace-nowrap transition-all">스승의날</a>
+      <a href="#s7"
+        class="bylaws-pill px-3 py-1.5 rounded-lg text-[11px] font-semibold text-zinc-500 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 whitespace-nowrap transition-all">예비비</a>
+      <a href="#s8"
+        class="bylaws-pill px-3 py-1.5 rounded-lg text-[11px] font-semibold text-zinc-500 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 whitespace-nowrap transition-all">공개</a>
+      <a href="#s9"
+        class="bylaws-pill px-3 py-1.5 rounded-lg text-[11px] font-semibold text-zinc-500 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 whitespace-nowrap transition-all">개정</a>
+      <a href="#budget"
+        class="bylaws-pill px-3 py-1.5 rounded-lg text-[11px] font-semibold text-navy-600 dark:text-navy-400 bg-navy-50 dark:bg-navy-950/50 whitespace-nowrap transition-all">예산</a>
+      <a href="#revisions"
+        class="bylaws-pill px-3 py-1.5 rounded-lg text-[11px] font-semibold text-navy-600 dark:text-navy-400 bg-navy-50 dark:bg-navy-950/50 whitespace-nowrap transition-all">이력</a>
+    </div>
+
+    <!-- TOC -->
+    <div
+      class="bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-2xl p-5 fi relative overflow-hidden">
+      <div class="accent-bar bar-navy"></div>
+      <div class="flex items-center gap-2.5 mb-4 pt-1">
+        <div class="badge-icon bg-navy-50 dark:bg-navy-950/50 text-navy-600 dark:text-navy-400">
+          <i data-lucide="list" class="w-5 h-5"></i>
+        </div>
+        <h2 class="text-base font-bold">목차</h2>
+      </div>
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-0.5">
+        <a href="#s1"
+          class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-zinc-50 dark:hover:bg-zinc-700/50 transition-colors"><span
+            class="w-6 h-6 rounded-md bg-navy-50 dark:bg-navy-950/50 text-navy-700 dark:text-navy-400 text-[11px] font-bold flex items-center justify-center flex-shrink-0">1</span><span
+            class="text-sm font-medium text-zinc-700 dark:text-zinc-300">임원진 구성 및 임기</span></a>
+        <a href="#s2"
+          class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-zinc-50 dark:hover:bg-zinc-700/50 transition-colors"><span
+            class="w-6 h-6 rounded-md bg-navy-50 dark:bg-navy-950/50 text-navy-700 dark:text-navy-400 text-[11px] font-bold flex items-center justify-center flex-shrink-0">2</span><span
+            class="text-sm font-medium text-zinc-700 dark:text-zinc-300">회비 및 운영 원칙</span></a>
+        <a href="#s3"
+          class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-zinc-50 dark:hover:bg-zinc-700/50 transition-colors"><span
+            class="w-6 h-6 rounded-md bg-navy-50 dark:bg-navy-950/50 text-navy-700 dark:text-navy-400 text-[11px] font-bold flex items-center justify-center flex-shrink-0">3</span><span
+            class="text-sm font-medium text-zinc-700 dark:text-zinc-300">경조사 지원</span></a>
+        <a href="#s4"
+          class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-zinc-50 dark:hover:bg-zinc-700/50 transition-colors"><span
+            class="w-6 h-6 rounded-md bg-navy-50 dark:bg-navy-950/50 text-navy-700 dark:text-navy-400 text-[11px] font-bold flex items-center justify-center flex-shrink-0">4</span><span
+            class="text-sm font-medium text-zinc-700 dark:text-zinc-300">소규모 모임 지원</span></a>
+        <a href="#s5"
+          class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-zinc-50 dark:hover:bg-zinc-700/50 transition-colors"><span
+            class="w-6 h-6 rounded-md bg-navy-50 dark:bg-navy-950/50 text-navy-700 dark:text-navy-400 text-[11px] font-bold flex items-center justify-center flex-shrink-0">5</span><span
+            class="text-sm font-medium text-zinc-700 dark:text-zinc-300">연례 행사 (홈커밍데이)</span></a>
+        <a href="#s6"
+          class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-zinc-50 dark:hover:bg-zinc-700/50 transition-colors"><span
+            class="w-6 h-6 rounded-md bg-navy-50 dark:bg-navy-950/50 text-navy-700 dark:text-navy-400 text-[11px] font-bold flex items-center justify-center flex-shrink-0">6</span><span
+            class="text-sm font-medium text-zinc-700 dark:text-zinc-300">스승의 날</span></a>
+        <a href="#s7"
+          class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-zinc-50 dark:hover:bg-zinc-700/50 transition-colors"><span
+            class="w-6 h-6 rounded-md bg-navy-50 dark:bg-navy-950/50 text-navy-700 dark:text-navy-400 text-[11px] font-bold flex items-center justify-center flex-shrink-0">7</span><span
+            class="text-sm font-medium text-zinc-700 dark:text-zinc-300">예비비 운용</span></a>
+        <a href="#s8"
+          class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-zinc-50 dark:hover:bg-zinc-700/50 transition-colors"><span
+            class="w-6 h-6 rounded-md bg-navy-50 dark:bg-navy-950/50 text-navy-700 dark:text-navy-400 text-[11px] font-bold flex items-center justify-center flex-shrink-0">8</span><span
+            class="text-sm font-medium text-zinc-700 dark:text-zinc-300">내역 공개</span></a>
+        <a href="#s9"
+          class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-zinc-50 dark:hover:bg-zinc-700/50 transition-colors"><span
+            class="w-6 h-6 rounded-md bg-navy-50 dark:bg-navy-950/50 text-navy-700 dark:text-navy-400 text-[11px] font-bold flex items-center justify-center flex-shrink-0">9</span><span
+            class="text-sm font-medium text-zinc-700 dark:text-zinc-300">회칙의 개정</span></a>
+      </div>
+    </div>
+
+    <!-- 제1조 임원진 -->
+    <section id="s1"
+      class="bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-2xl p-5 sm:p-7 fi relative overflow-hidden">
+      <div class="accent-bar bar-navy"></div>
+      <div class="flex items-center gap-2.5 mb-5 pt-1">
+        <div class="badge-icon bg-navy-50 dark:bg-navy-950/50 text-navy-600 dark:text-navy-400">
+          <i data-lucide="users" class="w-5 h-5"></i>
+        </div>
+        <div>
+          <span class="tag bg-navy-50 dark:bg-navy-950/50 text-navy-700 dark:text-navy-400">제1조</span>
+          <h2 class="text-lg font-bold mt-0.5">임원진 구성 및 임기</h2>
+        </div>
+      </div>
+      <p class="text-[13px] text-zinc-600 dark:text-zinc-400 leading-relaxed mb-5">모임의 안정적인 운영과 업무 연속성을 위해 임원 임기 및 교체
+        시기를 다음과 같이 규정합니다. 격년 교체 체계를 통해 경험 전수와 신규 리더십 도입을 균형 있게 달성합니다.</p>
+      <div class="bg-zinc-50 dark:bg-zinc-800/50 rounded-xl p-4 mb-5 border border-zinc-100 dark:border-zinc-700/50">
+        <p class="text-[13px] font-bold mb-1 flex items-center gap-1.5">
+          <i data-lucide="clock" class="w-4 h-4 text-navy-500"></i> 임기 원칙
+        </p>
+        <p class="text-[13px] text-zinc-600 dark:text-zinc-400 mb-4">회장, 총무, 감사의 임기는 <strong
+            class="text-zinc-800 dark:text-zinc-200">2년</strong>을 원칙으로 합니다.</p>
+        <p class="text-[13px] font-bold mb-3 flex items-center gap-1.5">
+          <i data-lucide="refresh-cw" class="w-4 h-4 text-navy-500"></i> 연속성 확보 (격년 교체)
+        </p>
+        <p class="text-[13px] text-zinc-600 dark:text-zinc-400 mb-3">회장과 총무의 교체 시기를 분리하기 위해 초대 임원에 한해 아래와 같이 설정합니다.</p>
+        <div class="grid grid-cols-3 gap-2.5">
+          <div class="bg-white dark:bg-zinc-900 rounded-lg p-3 border border-zinc-200 dark:border-zinc-700 text-center">
+            <i data-lucide="crown" class="w-4 h-4 text-navy-500 mx-auto mb-1"></i>
+            <p class="text-[12px] font-bold mb-0.5">회장</p>
+            <p class="tabular-nums text-xl font-extrabold text-navy-600 dark:text-navy-400">3<span
+                class="text-[11px] font-medium text-zinc-400">년</span></p>
+            <p class="text-[10px] text-zinc-500">초대 한정, 이후 2년</p>
+          </div>
+          <div class="bg-white dark:bg-zinc-900 rounded-lg p-3 border border-zinc-200 dark:border-zinc-700 text-center">
+            <i data-lucide="briefcase" class="w-4 h-4 text-navy-500 mx-auto mb-1"></i>
+            <p class="text-[12px] font-bold mb-0.5">총무</p>
+            <p class="tabular-nums text-xl font-extrabold text-navy-600 dark:text-navy-400">2<span
+                class="text-[11px] font-medium text-zinc-400">년</span></p>
+            <p class="text-[10px] text-zinc-500">초대부터 동일</p>
+          </div>
+          <div class="bg-white dark:bg-zinc-900 rounded-lg p-3 border border-zinc-200 dark:border-zinc-700 text-center">
+            <i data-lucide="shield-check" class="w-4 h-4 text-navy-500 mx-auto mb-1"></i>
+            <p class="text-[12px] font-bold mb-0.5">감사</p>
+            <p class="tabular-nums text-xl font-extrabold text-navy-600 dark:text-navy-400">1<span
+                class="text-[11px] font-medium text-zinc-400">년</span></p>
+            <p class="text-[10px] text-zinc-500">초대 한정, 이후 2년</p>
+          </div>
+        </div>
+      </div>
+      <div class="space-y-3.5">
+        <div class="flex gap-2.5">
+          <div
+            class="w-6 h-6 rounded-md bg-navy-50 dark:bg-navy-950/50 flex items-center justify-center mt-0.5 flex-shrink-0">
+            <i data-lucide="vote" class="w-4 h-4 text-navy-600 dark:text-navy-400"></i>
+          </div>
+          <div>
+            <p class="text-[13px] font-bold mb-0.5">선출 방식</p>
+            <p class="text-[13px] text-zinc-600 dark:text-zinc-400 leading-relaxed">역대 전임 임원진(회장, 총무, 감사)이 회의를 통해 후보를
+              추천하며, 전체 회원의 투표를 통해 최종 선출합니다.</p>
+          </div>
+        </div>
+        <div class="flex gap-2.5">
+          <div
+            class="w-6 h-6 rounded-md bg-navy-50 dark:bg-navy-950/50 flex items-center justify-center mt-0.5 flex-shrink-0">
+            <i data-lucide="alert-triangle" class="w-4 h-4 text-navy-600 dark:text-navy-400"></i>
+          </div>
+          <div>
+            <p class="text-[13px] font-bold mb-0.5">중도 사임 및 공백 처리</p>
+            <p class="text-[13px] text-zinc-600 dark:text-zinc-400 leading-relaxed">임기 중 사임 시 운영위원회에서 직무대행을 선임합니다. 잔여
+              임기가 <strong class="text-zinc-800 dark:text-zinc-200">6개월 초과</strong>시 보궐 선출합니다.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 제2조 회비 -->
+    <section id="s2"
+      class="bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-2xl p-5 sm:p-7 fi relative overflow-hidden">
+      <div class="accent-bar bar-navy"></div>
+      <div class="flex items-center gap-2.5 mb-5 pt-1">
+        <div class="badge-icon bg-navy-50 dark:bg-navy-950/50 text-navy-600 dark:text-navy-400">
+          <i data-lucide="wallet" class="w-5 h-5"></i>
+        </div>
+        <div>
+          <span class="tag bg-navy-50 dark:bg-navy-950/50 text-navy-700 dark:text-navy-400">제2조</span>
+          <h2 class="text-lg font-bold mt-0.5">회비 및 운영 원칙</h2>
+        </div>
+      </div>
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <div class="bg-navy-50/60 dark:bg-navy-950/20 rounded-xl p-4 border border-navy-100 dark:border-navy-900/30">
+          <p class="text-[12px] font-bold mb-0.5">월 회비</p>
+          <p class="tabular-nums text-xl font-extrabold text-navy-700 dark:text-navy-400" id="bylawMonthlyFee">
+            10,000<span class="text-[11px] font-medium text-zinc-400">원</span></p>
+          <p class="text-[11px] text-zinc-500 mt-0.5" id="bylawMonthlyIncome">월 수입 약 32만 원 기준</p>
+        </div>
+        <div class="bg-zinc-50 dark:bg-zinc-800/50 rounded-xl p-4 border border-zinc-200 dark:border-zinc-700">
+          <p class="text-[12px] font-bold mb-0.5">조정 권한</p>
+          <p class="text-[13px] text-zinc-600 dark:text-zinc-400 leading-relaxed">물가 상승 시 <strong
+              class="text-zinc-800 dark:text-zinc-200">과반수 찬성</strong>으로 조정 가능</p>
+        </div>
+        <div class="bg-zinc-50 dark:bg-zinc-800/50 rounded-xl p-4 border border-zinc-200 dark:border-zinc-700">
+          <p class="text-[12px] font-bold mb-0.5">이월 규정</p>
+          <p class="text-[13px] text-zinc-600 dark:text-zinc-400 leading-relaxed">미소진 예산 다음 해 예비비로 <strong
+              class="text-zinc-800 dark:text-zinc-200">전액 이월</strong></p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 제3조 경조사 -->
+    <section id="s3"
+      class="bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-2xl p-5 sm:p-7 fi relative overflow-hidden">
+      <div class="accent-bar bar-navy"></div>
+      <div class="flex items-center gap-2.5 mb-5 pt-1">
+        <div class="badge-icon bg-navy-50 dark:bg-navy-950/50 text-navy-600 dark:text-navy-400">
+          <i data-lucide="heart" class="w-5 h-5"></i>
+        </div>
+        <div>
+          <span class="tag bg-navy-50 dark:bg-navy-950/50 text-navy-700 dark:text-navy-400">제3조</span>
+          <h2 class="text-lg font-bold mt-0.5">경조사 지원 (화환)</h2>
+        </div>
+      </div>
+      <div
+        class="bg-navy-50/50 dark:bg-navy-950/20 rounded-xl p-4 border border-navy-100 dark:border-navy-900/30 mb-5 flex items-center justify-between flex-wrap gap-2">
+        <div>
+          <p class="text-[13px] font-bold">지급 기준</p>
+          <p class="text-[12px] text-zinc-500">축하/근조 화환 또는 화분</p>
+        </div>
+        <p class="tabular-nums text-xl font-extrabold text-navy-700 dark:text-navy-400" id="bylawCondolence">70,000<span
+            class="text-[11px] font-medium text-zinc-400">원</span></p>
+      </div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-5">
+        <div class="bg-white dark:bg-zinc-900 rounded-xl p-4 border border-zinc-200 dark:border-zinc-700">
+          <p class="text-[13px] font-bold mb-2">경사</p>
+          <p class="text-[13px] text-zinc-600 dark:text-zinc-400 flex items-start gap-1.5 mb-1">
+            <i data-lucide="check" class="w-4 h-4 text-navy-500 mt-0.5 flex-shrink-0"></i>
+            회원 본인의 최초 1회 결혼
+          </p>
+          <p class="text-[13px] text-zinc-600 dark:text-zinc-400 flex items-start gap-1.5">
+            <i data-lucide="check" class="w-4 h-4 text-navy-500 mt-0.5 flex-shrink-0"></i>
+            연구실 후배 및 동문의 졸업 축하
+          </p>
+        </div>
+        <div class="bg-white dark:bg-zinc-900 rounded-xl p-4 border border-zinc-200 dark:border-zinc-700">
+          <p class="text-[13px] font-bold mb-2">조사</p>
+          <p class="text-[13px] text-zinc-600 dark:text-zinc-400 flex items-start gap-1.5">
+            <i data-lucide="check" class="w-4 h-4 text-navy-500 mt-0.5 flex-shrink-0"></i>
+            회원 본인 및 배우자의 직계존비속 상 (부모, 자녀 등 1촌)
+          </p>
+        </div>
+      </div>
+      <div
+        class="flex gap-2.5 bg-navy-50/60 dark:bg-navy-950/20 rounded-lg p-3.5 border border-navy-100 dark:border-navy-900/30">
+        <i data-lucide="info" class="w-4 h-4 text-navy-600 dark:text-navy-400 mt-0.5 flex-shrink-0"></i>
+        <p class="text-[13px] text-zinc-700 dark:text-zinc-300 leading-relaxed"><strong>운영 규칙:</strong> 연간 기본
+          <strong>5회</strong> 지원, 초과 시 예비비에서 충당하여 빠짐없이 지원합니다.
+        </p>
+      </div>
+    </section>
+
+    <!-- 제4조 소모임 -->
+    <section id="s4"
+      class="bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-2xl p-5 sm:p-7 fi relative overflow-hidden">
+      <div class="accent-bar bar-navy"></div>
+      <div class="flex items-center gap-2.5 mb-5 pt-1">
+        <div class="badge-icon bg-navy-50 dark:bg-navy-950/50 text-navy-600 dark:text-navy-400">
+          <i data-lucide="users-round" class="w-5 h-5"></i>
+        </div>
+        <div>
+          <span class="tag bg-navy-50 dark:bg-navy-950/50 text-navy-700 dark:text-navy-400">제4조</span>
+          <h2 class="text-lg font-bold mt-0.5">소규모 모임 지원</h2>
+        </div>
+      </div>
+      <div class="grid grid-cols-3 gap-2.5 mb-5">
+        <div
+          class="bg-navy-50/50 dark:bg-navy-950/20 rounded-xl p-3.5 border border-navy-100 dark:border-navy-900/30 text-center">
+          <p class="tabular-nums text-lg font-extrabold text-navy-700 dark:text-navy-400" id="bylawSmallGathering">
+            2<span class="text-[11px] font-medium text-zinc-400">만 원</span></p>
+          <p class="text-[10px] text-zinc-500 mt-0.5">1인당 지원</p>
+        </div>
+        <div
+          class="bg-zinc-50 dark:bg-zinc-800/50 rounded-xl p-3.5 border border-zinc-200 dark:border-zinc-700 text-center">
+          <p class="tabular-nums text-lg font-extrabold">3<span class="text-[11px] font-medium text-zinc-400">인
+              이상</span></p>
+          <p class="text-[10px] text-zinc-500 mt-0.5">최소 참석</p>
+        </div>
+        <div
+          class="bg-zinc-50 dark:bg-zinc-800/50 rounded-xl p-3.5 border border-zinc-200 dark:border-zinc-700 text-center">
+          <p class="tabular-nums text-lg font-extrabold" id="bylawSmallGatheringCap">80<span
+              class="text-[11px] font-medium text-zinc-400">만 원</span></p>
+          <p class="text-[10px] text-zinc-500 mt-0.5">연간 한도</p>
+        </div>
+      </div>
+      <div
+        class="flex gap-2.5 bg-navy-50/60 dark:bg-navy-950/20 rounded-lg p-3.5 border border-navy-100 dark:border-navy-900/30">
+        <i data-lucide="camera" class="w-4 h-4 text-navy-600 dark:text-navy-400 mt-0.5 flex-shrink-0"></i>
+        <div>
+          <p class="text-[13px] text-zinc-700 dark:text-zinc-300 leading-relaxed"><strong>인증 필수:</strong> 영수증 + 참석자 전원
+            <strong>'인생네컷'</strong> 사진을 단톡방에 공유
+          </p>
+          <p class="text-[11px] text-zinc-500 mt-1">미제출 시 정산 보류. 소급 인증은 7일 이내.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 제5조 홈커밍 -->
+    <section id="s5"
+      class="bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-2xl p-5 sm:p-7 fi relative overflow-hidden">
+      <div class="accent-bar bar-navy"></div>
+      <div class="flex items-center gap-2.5 mb-5 pt-1">
+        <div class="badge-icon bg-navy-50 dark:bg-navy-950/50 text-navy-600 dark:text-navy-400">
+          <i data-lucide="calendar-heart" class="w-5 h-5"></i>
+        </div>
+        <div>
+          <span class="tag bg-navy-50 dark:bg-navy-950/50 text-navy-700 dark:text-navy-400">제5조</span>
+          <h2 class="text-lg font-bold mt-0.5">연례 행사 (홈커밍데이)</h2>
+        </div>
+      </div>
+      <div
+        class="bg-navy-50/40 dark:bg-navy-950/20 rounded-xl p-4 border border-navy-100 dark:border-navy-900/30 mb-5 flex items-center justify-between flex-wrap gap-2">
+        <div>
+          <p class="text-[13px] font-bold">연간 지원 규모</p>
+          <p class="text-[12px] text-zinc-500">연 1회 전체 모임 집중 지원</p>
+        </div>
+        <p class="tabular-nums text-xl font-extrabold text-navy-700 dark:text-navy-400" id="bylawAnnualEvent">200<span
+            class="text-[11px] font-medium text-zinc-400">만 원</span></p>
+      </div>
+      <div class="grid grid-cols-3 gap-2.5">
+        <div
+          class="flex flex-col items-center gap-1.5 bg-white dark:bg-zinc-900 rounded-lg p-3 border border-zinc-200 dark:border-zinc-700 text-center">
+          <i data-lucide="map-pin" class="w-4 h-4 text-navy-500"></i>
+          <p class="text-[12px] font-semibold">대관료</p>
+          <p class="text-[10px] text-zinc-500">행사장 공간 대여</p>
+        </div>
+        <div
+          class="flex flex-col items-center gap-1.5 bg-white dark:bg-zinc-900 rounded-lg p-3 border border-zinc-200 dark:border-zinc-700 text-center">
+          <i data-lucide="utensils" class="w-4 h-4 text-navy-500"></i>
+          <p class="text-[12px] font-semibold">고급 식사</p>
+          <p class="text-[10px] text-zinc-500">케이터링 / 단체식</p>
+        </div>
+        <div
+          class="flex flex-col items-center gap-1.5 bg-white dark:bg-zinc-900 rounded-lg p-3 border border-zinc-200 dark:border-zinc-700 text-center">
+          <i data-lucide="gift" class="w-4 h-4 text-navy-500"></i>
+          <p class="text-[12px] font-semibold">기념품</p>
+          <p class="text-[10px] text-zinc-500">연도별 굿즈 제작</p>
+        </div>
+      </div>
+      <p class="text-[11px] text-zinc-500 mt-3">전체 예산의 약 52% 배정. 부족 시 예비비에서 추가 충당.</p>
+    </section>
+
+    <!-- 제6조 스승의 날 -->
+    <section id="s6"
+      class="bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-2xl p-5 sm:p-7 fi relative overflow-hidden">
+      <div class="accent-bar bar-navy"></div>
+      <div class="flex items-center gap-2.5 mb-5 pt-1">
+        <div class="badge-icon bg-navy-50 dark:bg-navy-950/50 text-navy-600 dark:text-navy-400">
+          <i data-lucide="graduation-cap" class="w-5 h-5"></i>
+        </div>
+        <div>
+          <span class="tag bg-navy-50 dark:bg-navy-950/50 text-navy-700 dark:text-navy-400">제6조</span>
+          <h2 class="text-lg font-bold mt-0.5">스승의 날</h2>
+        </div>
+      </div>
+      <div
+        class="bg-navy-50/40 dark:bg-navy-950/20 rounded-xl p-4 border border-navy-100 dark:border-navy-900/30 mb-5 flex items-center justify-between flex-wrap gap-2">
+        <div>
+          <p class="text-[13px] font-bold">연간 배정</p>
+          <p class="text-[12px] text-zinc-500">지도 교수님 감사 및 학과 지원</p>
+        </div>
+        <p class="tabular-nums text-xl font-extrabold text-navy-700 dark:text-navy-400" id="bylawTeachersDay">30<span
+            class="text-[11px] font-medium text-zinc-400">만 원</span></p>
+      </div>
+      <div class="space-y-2.5">
+        <p class="text-[13px] text-zinc-600 dark:text-zinc-400 flex items-start gap-2">
+          <i data-lucide="heart" class="w-4 h-4 text-navy-500 mt-0.5 flex-shrink-0"></i>
+          지도 교수님께 감사 인사 및 선물 준비
+        </p>
+        <p class="text-[13px] text-zinc-600 dark:text-zinc-400 flex items-start gap-2">
+          <i data-lucide="coffee" class="w-4 h-4 text-navy-500 mt-0.5 flex-shrink-0"></i>
+          학과 사무실 간식 지원으로 재학생 및 교직원 유대 강화
+        </p>
+      </div>
+    </section>
+
+    <!-- 제7조 예비비 -->
+    <section id="s7"
+      class="bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-2xl p-5 sm:p-7 fi relative overflow-hidden">
+      <div class="accent-bar bar-navy"></div>
+      <div class="flex items-center gap-2.5 mb-5 pt-1">
+        <div class="badge-icon bg-navy-50 dark:bg-navy-950/50 text-navy-600 dark:text-navy-400">
+          <i data-lucide="shield" class="w-5 h-5"></i>
+        </div>
+        <div>
+          <span class="tag bg-navy-50 dark:bg-navy-950/50 text-navy-700 dark:text-navy-400">제7조</span>
+          <h2 class="text-lg font-bold mt-0.5">예비비 운용 및 투명성</h2>
+        </div>
+      </div>
+      <div
+        class="bg-navy-50/40 dark:bg-navy-950/20 rounded-xl p-4 border border-navy-100 dark:border-navy-900/30 mb-5 flex items-center justify-between flex-wrap gap-2">
+        <div>
+          <p class="text-[13px] font-bold">연간 배정</p>
+          <p class="text-[12px] text-zinc-500">전년도 이월금 별도 합산</p>
+        </div>
+        <p class="tabular-nums text-xl font-extrabold text-navy-700 dark:text-navy-400" id="bylawReserve">39<span
+            class="text-[11px] font-medium text-zinc-400">만 원</span></p>
+      </div>
+      <div class="space-y-2">
+        <p class="text-[13px] text-zinc-600 dark:text-zinc-400 flex items-start gap-2"><i data-lucide="circle-check"
+            class="w-4 h-4 text-navy-500 mt-0.5 flex-shrink-0"></i>5회 초과 경조사 추가 지원</p>
+        <p class="text-[13px] text-zinc-600 dark:text-zinc-400 flex items-start gap-2"><i data-lucide="circle-check"
+            class="w-4 h-4 text-navy-500 mt-0.5 flex-shrink-0"></i>홈커밍데이 예산 부족분 보전</p>
+        <p class="text-[13px] text-zinc-600 dark:text-zinc-400 flex items-start gap-2"><i data-lucide="circle-check"
+            class="w-4 h-4 text-navy-500 mt-0.5 flex-shrink-0"></i>긴급 상황 시 운영위원회 결정에 따라 사용</p>
+        <p class="text-[13px] text-zinc-600 dark:text-zinc-400 flex items-start gap-2"><i data-lucide="circle-check"
+            class="w-4 h-4 text-navy-500 mt-0.5 flex-shrink-0"></i>미사용분 차기 연도 전액 이월</p>
+      </div>
+    </section>
+
+    <!-- 제8조 내역 공개 -->
+    <section id="s8"
+      class="bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-2xl p-5 sm:p-7 fi relative overflow-hidden">
+      <div class="accent-bar bar-navy"></div>
+      <div class="flex items-center gap-2.5 mb-5 pt-1">
+        <div class="badge-icon bg-navy-50 dark:bg-navy-950/50 text-navy-600 dark:text-navy-400">
+          <i data-lucide="eye" class="w-5 h-5"></i>
+        </div>
+        <div>
+          <span class="tag bg-navy-50 dark:bg-navy-950/50 text-navy-700 dark:text-navy-400">제8조</span>
+          <h2 class="text-lg font-bold mt-0.5">내역 공개</h2>
+        </div>
+      </div>
+      <p class="text-[13px] text-zinc-600 dark:text-zinc-400 leading-relaxed">회비 사용 내역은 <strong
+          class="text-zinc-800 dark:text-zinc-200">연 1회 결산 시</strong> 전체 회원에게 투명하게 공개합니다. 결산 보고서에는 항목별 수입/지출 내역, 이월금 현황,
+        차기 연도 예산안이 포함되며 감사의 확인을 거쳐 공개됩니다. 회원은 결산 내역에 대해 질의할 권리를 가집니다.</p>
+    </section>
+
+    <!-- 제9조 개정 -->
+    <section id="s9"
+      class="bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-2xl p-5 sm:p-7 fi relative overflow-hidden">
+      <div class="accent-bar bar-navy"></div>
+      <div class="flex items-center gap-2.5 mb-5 pt-1">
+        <div class="badge-icon bg-navy-50 dark:bg-navy-950/50 text-navy-600 dark:text-navy-400">
+          <i data-lucide="pencil" class="w-5 h-5"></i>
+        </div>
+        <div>
+          <span class="tag bg-navy-50 dark:bg-navy-950/50 text-navy-700 dark:text-navy-400">제9조</span>
+          <h2 class="text-lg font-bold mt-0.5">회칙의 개정</h2>
+        </div>
+      </div>
+      <p class="text-[13px] text-zinc-600 dark:text-zinc-400 leading-relaxed mb-4">운영위원회 또는 <strong
+          class="text-zinc-800 dark:text-zinc-200">회원 5인 이상</strong> 발의로 개정 제안, <strong
+          class="text-zinc-800 dark:text-zinc-200">과반수 찬성</strong>으로 수정 가능합니다.</p>
+      <div
+        class="flex gap-2.5 bg-navy-50/60 dark:bg-navy-950/20 rounded-lg p-3.5 border border-navy-100 dark:border-navy-900/30">
+        <i data-lucide="info" class="w-4 h-4 text-navy-600 dark:text-navy-400 mt-0.5 flex-shrink-0"></i>
+        <p class="text-[13px] text-zinc-700 dark:text-zinc-300 leading-relaxed">개정안은 투표 <strong>7일 전</strong> 사전 공지 필수.
+          온라인/현장 투표 가능. 의결 즉시 효력 발생.</p>
+      </div>
+    </section>
+
+    <!-- Revision History (New) -->
+    <section id="revisions"
+      class="bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-2xl p-5 sm:p-7 fi relative overflow-hidden">
+      <div class="accent-bar bar-navy"></div>
+      <div class="flex items-center gap-2.5 mb-5 pt-1">
+        <div class="badge-icon bg-navy-50 dark:bg-navy-950/50 text-navy-600 dark:text-navy-400">
+          <i data-lucide="history" class="w-5 h-5"></i>
+        </div>
+        <div>
+          <span class="tag bg-navy-50 dark:bg-navy-950/50 text-navy-700 dark:text-navy-400">부록</span>
+          <h2 class="text-lg font-bold mt-0.5">개정 이력</h2>
+        </div>
+      </div>
+      <div class="space-y-4" id="revisionList">
+        <!-- Revisions will be rendered here -->
+      </div>
+    </section>
+
+    <!-- 예산 요약 -->
+    <section id="budget"
+      class="bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-2xl p-5 sm:p-7 fi relative overflow-hidden">
+      <div class="accent-bar bar-navy"></div>
+      <div class="flex items-center justify-between mb-5 pt-1">
+        <div class="flex items-center gap-2.5">
+          <div class="badge-icon bg-navy-50 dark:bg-navy-950/50 text-navy-600 dark:text-navy-400">
+            <i data-lucide="bar-chart-3" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <span class="tag bg-navy-50 dark:bg-navy-950/50 text-navy-700 dark:text-navy-400">부록</span>
+            <h2 class="text-lg font-bold mt-0.5">연간 예산 집행 현황</h2>
+          </div>
+        </div>
+        <select id="budgetYear" onchange="renderBudgetExecution()"
+          class="px-3 py-2 text-xs font-semibold rounded-xl bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 focus:outline-none focus:ring-2 focus:ring-navy-500">
+        </select>
+      </div>
+      <div id="budgetBarsContainer"
+        class="bg-zinc-50 dark:bg-zinc-800/50 rounded-xl p-4 mb-5 border border-zinc-200 dark:border-zinc-700 space-y-3.5">
+        <div>
+          <div class="flex items-center justify-between mb-1">
+            <div class="flex items-center gap-1.5"><span
+                class="w-2.5 h-2.5 rounded bg-navy-500 flex-shrink-0"></span><span
+                class="text-[13px] font-medium">홈커밍데이</span></div><span class="text-[13px] font-bold tabular-nums">200만
+              원</span>
+          </div>
+          <div class="budget-bar">
+            <div class="budget-fill bg-navy-500" style="width:52.08%"></div>
+          </div>
+          <p class="text-right text-[11px] text-zinc-400 mt-0.5">52.1%</p>
+        </div>
+        <div>
+          <div class="flex items-center justify-between mb-1">
+            <div class="flex items-center gap-1.5"><span
+                class="w-2.5 h-2.5 rounded bg-navy-500 flex-shrink-0"></span><span class="text-[13px] font-medium">소규모
+                모임</span></div><span class="text-[13px] font-bold tabular-nums">80만 원</span>
+          </div>
+          <div class="budget-bar">
+            <div class="budget-fill bg-navy-500" style="width:20.83%"></div>
+          </div>
+          <p class="text-right text-[11px] text-zinc-400 mt-0.5">20.8%</p>
+        </div>
+        <div>
+          <div class="flex items-center justify-between mb-1">
+            <div class="flex items-center gap-1.5"><span
+                class="w-2.5 h-2.5 rounded bg-navy-500 flex-shrink-0"></span><span
+                class="text-[13px] font-medium">예비비</span></div><span class="text-[13px] font-bold tabular-nums">39만
+              원</span>
+          </div>
+          <div class="budget-bar">
+            <div class="budget-fill bg-navy-500" style="width:10.16%"></div>
+          </div>
+          <p class="text-right text-[11px] text-zinc-400 mt-0.5">10.2%</p>
+        </div>
+        <div>
+          <div class="flex items-center justify-between mb-1">
+            <div class="flex items-center gap-1.5"><span
+                class="w-2.5 h-2.5 rounded bg-navy-500 flex-shrink-0"></span><span class="text-[13px] font-medium">경조사
+                화환</span></div><span class="text-[13px] font-bold tabular-nums">35만 원</span>
+          </div>
+          <div class="budget-bar">
+            <div class="budget-fill bg-navy-500" style="width:9.11%"></div>
+          </div>
+          <p class="text-right text-[11px] text-zinc-400 mt-0.5">9.1%</p>
+        </div>
+        <div>
+          <div class="flex items-center justify-between mb-1">
+            <div class="flex items-center gap-1.5"><span
+                class="w-2.5 h-2.5 rounded bg-navy-500 flex-shrink-0"></span><span class="text-[13px] font-medium">스승의
+                날</span></div><span class="text-[13px] font-bold tabular-nums">30만 원</span>
+          </div>
+          <div class="budget-bar">
+            <div class="budget-fill bg-navy-500" style="width:7.81%"></div>
+          </div>
+          <p class="text-right text-[11px] text-zinc-400 mt-0.5">7.8%</p>
+        </div>
+      </div>
+      <!-- 수입/지출 요약 -->
+      <div id="budgetSummaryCards" class="grid grid-cols-3 gap-3 mb-5"></div>
+      <!-- 항목별 집행 현황 바 -->
+      <div id="budgetExecBars"
+        class="bg-zinc-50 dark:bg-zinc-800/50 rounded-xl p-4 mb-5 border border-zinc-200 dark:border-zinc-700 space-y-4">
+      </div>
+      <div id="budgetTableContainer" class="overflow-x-auto -mx-5 px-5 sm:mx-0 sm:px-0">
+      </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ====== TAB: 회원명부 ====== -->
+  <main id="panelMembers" class="max-w-4xl mx-auto px-5 py-8 w-full hidden">
+    <!-- Header -->
+    <div class="flex items-center justify-between mb-6">
+      <div>
+        <h2 class="text-xl font-bold">회원명부</h2>
+        <p class="text-sm text-zinc-500 mt-0.5">총 <span id="memberTotalCount"
+            class="font-semibold text-zinc-700 dark:text-zinc-300">0</span>명 등록</p>
+      </div>
+      <div class="flex items-center gap-2">
+        <button onclick="exportMembersExcel()"
+          class="flex items-center gap-1.5 px-3 py-2 text-xs font-semibold rounded-xl bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-700 transition-colors"
+          title="엑셀 내보내기">
+          <i data-lucide="download" class="w-3.5 h-3.5"></i>내보내기
+        </button>
+        <button onclick="openMemberModal()"
+          class="flex items-center gap-1.5 px-3 py-2 text-xs font-semibold rounded-xl bg-navy-600 text-white hover:bg-navy-700 transition-colors shadow-sm">
+          <i data-lucide="user-plus" class="w-3.5 h-3.5"></i>회원 추가
+        </button>
+      </div>
+    </div>
+
+    <!-- Search -->
+    <div class="relative mb-4">
+      <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400"></i>
+      <input type="text" id="memberSearch" placeholder="이름, 기수, 연락처 검색..."
+        class="w-full pl-9 pr-4 py-2.5 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-navy-500 focus:border-navy-500 transition-all placeholder:text-zinc-400"
+        oninput="renderMembers()">
+    </div>
+
+    <!-- Member List -->
+    <div id="memberList" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3"></div>
+    <div id="memberEmpty" class="hidden flex flex-col items-center justify-center py-16 text-center">
+      <div
+        class="w-14 h-14 bg-zinc-100 dark:bg-zinc-800 rounded-2xl flex items-center justify-center mb-3 border border-zinc-200 dark:border-zinc-700">
+        <i data-lucide="users" class="w-7 h-7 text-zinc-400"></i>
+      </div>
+      <h3 class="text-base font-bold mb-1">등록된 회원이 없습니다</h3>
+      <p class="text-sm text-zinc-500">"회원 추가" 버튼으로 회원을 등록하세요.</p>
+    </div>
+  </main>
+
+  <!-- ====== TAB: 회비관리 ====== -->
+  <main id="panelFees" class="max-w-4xl mx-auto px-5 py-8 w-full hidden">
+    <div class="flex items-center justify-between mb-6 flex-wrap gap-3">
+      <div>
+        <h2 class="text-xl font-bold">회비관리</h2>
+        <p class="text-sm text-zinc-500 mt-0.5">월별 회비 납부 현황</p>
+      </div>
+      <div class="flex items-center gap-2">
+        <select id="feeYear" onchange="renderFeeTable()"
+          class="px-3 py-2 text-xs font-semibold rounded-xl bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 focus:outline-none focus:ring-2 focus:ring-navy-500">
+        </select>
+        <button onclick="exportFeesExcel()"
+          class="flex items-center gap-1.5 px-3 py-2 text-xs font-semibold rounded-xl bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-700 transition-colors">
+          <i data-lucide="download" class="w-3.5 h-3.5"></i>내보내기
+        </button>
+      </div>
+    </div>
+
+    <!-- Fee Summary Cards -->
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6" id="feeSummaryCards"></div>
+
+    <!-- Fee Table -->
+    <div class="bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-2xl overflow-hidden">
+      <div class="overflow-x-auto">
+        <table class="w-full text-[13px]" id="feeTable">
+          <thead id="feeTableHead"></thead>
+          <tbody id="feeTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+    <div id="feeEmpty" class="hidden flex flex-col items-center justify-center py-16 text-center">
+      <div
+        class="w-14 h-14 bg-zinc-100 dark:bg-zinc-800 rounded-2xl flex items-center justify-center mb-3 border border-zinc-200 dark:border-zinc-700">
+        <i data-lucide="wallet" class="w-7 h-7 text-zinc-400"></i>
+      </div>
+      <h3 class="text-base font-bold mb-1">회원을 먼저 등록하세요</h3>
+      <p class="text-sm text-zinc-500">회원명부에서 회원을 추가한 후 이용하세요.</p>
+    </div>
+  </main>
+
+  <!-- ====== TAB: 지원관리 ====== -->
+  <main id="panelSupport" class="max-w-4xl mx-auto px-5 py-8 w-full hidden">
+    <div class="flex items-center justify-between mb-6 flex-wrap gap-3">
+      <div>
+        <h2 class="text-xl font-bold">지원 관리</h2>
+        <p class="text-sm text-zinc-500 mt-0.5">경조사, 소모임, 연례행사, 스승의날 지원 내역</p>
+      </div>
+      <div class="flex items-center gap-2">
+        <select id="supportYear" onchange="renderSupport()"
+          class="px-3 py-2 text-xs font-semibold rounded-xl bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 focus:outline-none focus:ring-2 focus:ring-navy-500">
+        </select>
+        <button onclick="openEventModal()"
+          class="flex items-center gap-1.5 px-3 py-2 text-xs font-semibold rounded-xl bg-navy-600 text-white hover:bg-navy-700 transition-colors shadow-sm">
+          <i data-lucide="plus" class="w-3.5 h-3.5"></i>지원 등록
+        </button>
+      </div>
+    </div>
+
+    <!-- Category pills -->
+    <div class="flex items-center gap-2 mb-6 overflow-x-auto hide-scrollbar pb-1" id="supportCatPills"></div>
+
+    <!-- Summary cards -->
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6" id="supportSummaryCards"></div>
+
+    <!-- Event list -->
+    <div id="supportEventList" class="space-y-3"></div>
+
+    <!-- Empty state -->
+    <div id="supportEmpty" class="hidden flex flex-col items-center justify-center py-16 text-center">
+      <div
+        class="w-14 h-14 bg-zinc-100 dark:bg-zinc-800 rounded-2xl flex items-center justify-center mb-3 border border-zinc-200 dark:border-zinc-700">
+        <i data-lucide="hand-heart" class="w-7 h-7 text-zinc-400"></i>
+      </div>
+      <h3 class="text-base font-bold mb-1">등록된 지원 내역이 없습니다</h3>
+      <p class="text-sm text-zinc-500">"지원 등록" 버튼으로 내역을 추가하세요.</p>
+    </div>
+  </main>
+
+  <!-- ====== TAB: 회비 내역서 ====== -->
+  <main id="panelStatements" class="max-w-4xl mx-auto px-5 py-8 w-full hidden">
+    <div class="flex items-center justify-between mb-6 flex-wrap gap-3">
+      <div>
+        <h2 class="text-xl font-bold">회비 내역서</h2>
+        <p class="text-sm text-zinc-500 mt-0.5">입출금 내역 및 개인별 납부 현황</p>
+      </div>
+      <div class="flex items-center gap-2">
+        <select id="stmtYear" onchange="renderStatements()"
+          class="px-3 py-2 text-xs font-semibold rounded-xl bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 focus:outline-none focus:ring-2 focus:ring-navy-500">
+        </select>
+        <button onclick="openTransactionModal()"
+          class="flex items-center gap-1.5 px-3 py-2 text-xs font-semibold rounded-xl bg-navy-600 text-white hover:bg-navy-700 transition-colors shadow-sm">
+          <i data-lucide="plus" class="w-3.5 h-3.5"></i>내역 추가
+        </button>
+        <button onclick="printStatements()"
+          class="flex items-center gap-1.5 px-3 py-2 text-xs font-semibold rounded-xl bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-700 transition-colors">
+          <i data-lucide="printer" class="w-3.5 h-3.5"></i>인쇄
+        </button>
+      </div>
+    </div>
+
+    <!-- Transaction Summary -->
+    <div class="grid grid-cols-3 gap-3 mb-6" id="txSummaryCards"></div>
+
+    <!-- Transaction List -->
+    <div id="txListSection" class="mb-8">
+      <h3 class="text-sm font-bold mb-3 flex items-center gap-1.5"><i data-lucide="list"
+          class="w-4 h-4 text-navy-500"></i>입출금 내역</h3>
+      <div id="txList" class="space-y-2"></div>
+      <div id="txEmpty"
+        class="hidden flex flex-col items-center justify-center py-10 text-center bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-2xl">
+        <div class="w-12 h-12 bg-zinc-100 dark:bg-zinc-700 rounded-xl flex items-center justify-center mb-2">
+          <i data-lucide="receipt" class="w-6 h-6 text-zinc-400"></i>
+        </div>
+        <p class="text-sm font-semibold mb-0.5">등록된 내역이 없습니다</p>
+        <p class="text-xs text-zinc-500">"내역 추가" 버튼으로 입금/사용 내역을 등록하세요.</p>
+      </div>
+    </div>
+
+    <!-- Per-member statements -->
+    <h3 class="text-sm font-bold mb-3 flex items-center gap-1.5"><i data-lucide="users"
+        class="w-4 h-4 text-navy-500"></i>회원별 납부 현황</h3>
+    <div id="stmtContent" class="space-y-4"></div>
+    <div id="stmtEmpty" class="hidden flex flex-col items-center justify-center py-16 text-center">
+      <div
+        class="w-14 h-14 bg-zinc-100 dark:bg-zinc-800 rounded-2xl flex items-center justify-center mb-3 border border-zinc-200 dark:border-zinc-700">
+        <i data-lucide="file-bar-chart" class="w-7 h-7 text-zinc-400"></i>
+      </div>
+      <h3 class="text-base font-bold mb-1">내역서 데이터가 없습니다</h3>
+      <p class="text-sm text-zinc-500">회원 등록 및 회비 납부 기록 후 이용하세요.</p>
+    </div>
+  </main>
+
+  <!-- ====== MEMBER MODAL ====== -->
+  <div id="memberModal" class="fixed inset-0 z-[60] hidden flex items-end sm:items-center sm:justify-center">
+    <div class="absolute inset-0 modal-backdrop transition-opacity" onclick="closeMemberModal()"></div>
+    <div
+      class="modal-sheet relative w-full sm:w-full sm:max-w-md bg-white dark:bg-zinc-900 rounded-t-2xl sm:rounded-2xl p-6 shadow-2xl transition-all duration-300 border border-zinc-200 dark:border-zinc-700 max-h-[90vh] overflow-y-auto">
+      <div class="w-12 h-1.5 bg-zinc-300 dark:bg-zinc-600 rounded-full mx-auto mb-6 sm:hidden"></div>
+      <h2 class="text-xl font-bold mb-2" id="memberModalTitle">회원 추가</h2>
+      <p class="text-sm text-zinc-500 mb-6">회원 정보를 입력하세요.</p>
+      <div class="space-y-4">
+        <div>
+          <label class="block text-xs font-semibold text-zinc-500 mb-1.5 ml-1">이름 <span
+              class="text-red-500">*</span></label>
+          <input type="text" id="mName" placeholder="홍길동" onkeydown="if(event.key==='Enter') saveMember()"
+            class="w-full px-4 py-3 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-navy-500 focus:border-navy-500 transition-all">
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-zinc-500 mb-1.5 ml-1">기수</label>
+            <select id="mCohort" onkeydown="if(event.key==='Enter') saveMember()"
+              class="w-full px-4 py-3 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-navy-500 focus:border-navy-500 transition-all appearance-none">
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-zinc-500 mb-1.5 ml-1">학위</label>
+            <select id="mDegree" onkeydown="if(event.key==='Enter') saveMember()"
+              class="w-full px-4 py-3 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-navy-500 focus:border-navy-500 transition-all appearance-none">
+              <option value="Ph.D.">Ph.D.</option>
+              <option value="M.S.">M.S.</option>
+            </select>
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-zinc-500 mb-1.5 ml-1">직책</label>
+            <select id="mRole"
+              class="w-full px-4 py-3 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-navy-500 focus:border-navy-500 transition-all appearance-none">
+              <option value="일반회원">일반회원</option>
+              <option value="회장">회장</option>
+              <option value="총무">총무</option>
+              <option value="감사">감사</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-zinc-500 mb-1.5 ml-1">연락처</label>
+            <input type="tel" id="mPhone" placeholder="010-0000-0000" oninput="fmtPhone(this)"
+              onkeydown="if(event.key==='Enter') saveMember()"
+              class="w-full px-4 py-3 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-navy-500 focus:border-navy-500 transition-all">
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-zinc-500 mb-1.5 ml-1">개인 이메일</label>
+            <input type="email" id="mEmail" placeholder="personal@email.com"
+              onkeydown="if(event.key==='Enter') saveMember()"
+              class="w-full px-4 py-3 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl text-sm font-mono focus:outline-none focus:ring-2 focus:ring-navy-500 focus:border-navy-500 transition-all">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-zinc-500 mb-1.5 ml-1">회사 이메일</label>
+            <input type="email" id="mEmailCompany" placeholder="work@company.com"
+              onkeydown="if(event.key==='Enter') saveMember()"
+              class="w-full px-4 py-3 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl text-sm font-mono focus:outline-none focus:ring-2 focus:ring-navy-500 focus:border-navy-500 transition-all">
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-zinc-500 mb-1.5 ml-1">회사 정보</label>
+            <input type="text" id="mCompany" placeholder="회사명 / 부서 / 직급"
+              onkeydown="if(event.key==='Enter') saveMember()"
+              class="w-full px-4 py-3 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-navy-500 focus:border-navy-500 transition-all">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-zinc-500 mb-1.5 ml-1">생일</label>
+            <input type="date" id="mBirthday" onkeydown="if(event.key==='Enter') saveMember()"
+              class="w-full px-4 py-3 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl text-sm tabular-nums focus:outline-none focus:ring-2 focus:ring-navy-500 focus:border-navy-500 transition-all">
+          </div>
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-zinc-500 mb-1.5 ml-1">메모</label>
+          <textarea id="mMemo" rows="2" placeholder="추가 메모 (선택사항)"
+            class="w-full px-4 py-3 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-navy-500 focus:border-navy-500 transition-all resize-none"></textarea>
+        </div>
+      </div>
+      <div class="mt-6 flex gap-3">
+        <button onclick="closeMemberModal()"
+          class="flex-1 py-3 text-sm font-semibold rounded-xl bg-transparent border border-zinc-200 dark:border-zinc-700 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors">취소</button>
+        <button onclick="saveMember()"
+          class="flex-1 py-3 text-sm font-semibold rounded-xl bg-navy-600 text-white hover:bg-navy-700 transition-colors">저장</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====== SETTINGS MODAL ====== -->
+  <div id="settingsModal" class="fixed inset-0 z-[60] hidden flex items-end sm:items-center sm:justify-center">
+    <div class="absolute inset-0 modal-backdrop transition-opacity" onclick="closeSettingsModal()"></div>
+    <div
+      class="modal-sheet relative w-full sm:w-full sm:max-w-md bg-white dark:bg-zinc-900 rounded-t-2xl sm:rounded-2xl p-6 shadow-2xl transition-all duration-300 border border-zinc-200 dark:border-zinc-700 max-h-[90vh] overflow-y-auto">
+      <div class="w-12 h-1.5 bg-zinc-300 dark:bg-zinc-600 rounded-full mx-auto mb-6 sm:hidden"></div>
+      <h2 class="text-xl font-bold mb-2 flex items-center gap-2"><i data-lucide="settings"
+          class="w-5 h-5 text-navy-500"></i>운영 설정</h2>
+      <p class="text-sm text-zinc-500 mb-6">회칙 기반 금액 설정을 관리합니다.</p>
+      <div class="space-y-4">
+        <div>
+          <label class="block text-xs font-semibold text-zinc-500 mb-1.5 ml-1">월회비 (원)</label>
+          <input type="text" id="sMonthlyFee" oninput="fmtInput(this)"
+            onkeydown="if(event.key==='Enter') saveSettings()"
+            class="w-full px-4 py-3 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl text-sm tabular-nums focus:outline-none focus:ring-2 focus:ring-navy-500 focus:border-navy-500 transition-all">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-zinc-500 mb-1.5 ml-1">경조사 지원 기준 (원)</label>
+          <input type="text" id="sCondolence" oninput="fmtInput(this)"
+            onkeydown="if(event.key==='Enter') saveSettings()"
+            class="w-full px-4 py-3 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl text-sm tabular-nums focus:outline-none focus:ring-2 focus:ring-navy-500 focus:border-navy-500 transition-all">
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-zinc-500 mb-1.5 ml-1">소모임 1인당 (원)</label>
+            <input type="text" id="sSmallGathering" oninput="fmtInput(this)"
+              onkeydown="if(event.key==='Enter') saveSettings()"
+              class="w-full px-4 py-3 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl text-sm tabular-nums focus:outline-none focus:ring-2 focus:ring-navy-500 focus:border-navy-500 transition-all">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-zinc-500 mb-1.5 ml-1">소모임 연간 한도 (원)</label>
+            <input type="text" id="sSmallGatheringCap" oninput="fmtInput(this)"
+              onkeydown="if(event.key==='Enter') saveSettings()"
+              class="w-full px-4 py-3 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl text-sm tabular-nums focus:outline-none focus:ring-2 focus:ring-navy-500 focus:border-navy-500 transition-all">
+          </div>
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-zinc-500 mb-1.5 ml-1">연례 행사 금액 (원)</label>
+          <input type="text" id="sAnnualEvent" oninput="fmtInput(this)"
+            onkeydown="if(event.key==='Enter') saveSettings()"
+            class="w-full px-4 py-3 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl text-sm tabular-nums focus:outline-none focus:ring-2 focus:ring-navy-500 focus:border-navy-500 transition-all">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-zinc-500 mb-1.5 ml-1">스승의 날 금액 (원)</label>
+          <input type="text" id="sTeachersDay" oninput="fmtInput(this)"
+            onkeydown="if(event.key==='Enter') saveSettings()"
+            class="w-full px-4 py-3 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl text-sm tabular-nums focus:outline-none focus:ring-2 focus:ring-navy-500 focus:border-navy-500 transition-all">
+        </div>
+
+        <!-- Data Management Section -->
+        <div class="pt-4 border-t border-zinc-100 dark:border-zinc-800">
+          <h3 class="text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-3">데이터 관리</h3>
+          <div class="space-y-3">
+            <div
+              class="bg-zinc-50 dark:bg-zinc-800/50 rounded-xl p-4 flex items-center justify-between border border-zinc-100 dark:border-zinc-700/50">
+              <div>
+                <p class="text-sm font-semibold text-zinc-900 dark:text-zinc-100">데이터 가져오기</p>
+                <p class="text-xs text-zinc-500">JSON 데이터 복원</p>
+              </div>
+              <label
+                class="text-xs px-3 py-1.5 rounded-lg active:scale-95 transition-all bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-700 cursor-pointer">
+                가져오기
+                <input type="file" accept=".json" class="hidden" onchange="importData(this.files[0])">
+              </label>
+            </div>
+            <div
+              class="bg-zinc-50 dark:bg-zinc-800/50 rounded-xl p-4 flex items-center justify-between border border-zinc-100 dark:border-zinc-700/50">
+              <div>
+                <p class="text-sm font-semibold text-zinc-900 dark:text-zinc-100">데이터 내보내기</p>
+                <p class="text-xs text-zinc-500">JSON 또는 엑셀로 백업</p>
+              </div>
+              <div class="flex gap-2">
+                <button onclick="exportToJSON()"
+                  class="text-xs px-3 py-1.5 rounded-lg active:scale-95 transition-all bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-700">JSON</button>
+                <button onclick="exportAllToExcel()"
+                  class="text-xs px-3 py-1.5 rounded-lg active:scale-95 transition-all bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-700">Excel</button>
+              </div>
+            </div>
+            <div
+              class="bg-zinc-50 dark:bg-zinc-800/50 rounded-xl p-4 flex items-center justify-between border border-zinc-100 dark:border-zinc-700/50">
+              <div>
+                <p class="text-sm font-semibold text-zinc-900 dark:text-zinc-100">데이터 초기화</p>
+                <p class="text-xs text-zinc-500">모든 데이터 영구 삭제</p>
+              </div>
+              <button onclick="clearAllData()"
+                class="text-xs px-3 py-1.5 rounded-lg active:scale-95 transition-all bg-red-500 text-white hover:bg-red-600 shadow-sm border border-transparent">
+                초기화
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="mt-6 flex gap-3">
+        <button onclick="closeSettingsModal()"
+          class="flex-1 py-3 text-sm font-semibold rounded-xl bg-transparent border border-zinc-200 dark:border-zinc-700 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors">취소</button>
+        <button onclick="saveSettings()"
+          class="flex-1 py-3 text-sm font-semibold rounded-xl bg-navy-600 text-white hover:bg-navy-700 transition-colors">저장</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====== FEE INPUT MODAL ====== -->
+  <div id="feeModal" class="fixed inset-0 z-[60] hidden flex items-end sm:items-center sm:justify-center">
+    <div class="absolute inset-0 modal-backdrop transition-opacity" onclick="closeFeeModal()"></div>
+    <div
+      class="modal-sheet relative w-full sm:w-full sm:max-w-sm bg-white dark:bg-zinc-900 rounded-t-2xl sm:rounded-2xl p-6 shadow-2xl transition-all duration-300 border border-zinc-200 dark:border-zinc-700">
+      <div class="w-12 h-1.5 bg-zinc-300 dark:bg-zinc-600 rounded-full mx-auto mb-6 sm:hidden"></div>
+      <h2 class="text-lg font-bold mb-1" id="feeModalTitle">회비 납부</h2>
+      <p class="text-sm text-zinc-500 mb-5" id="feeModalSub">납부 금액을 입력하세요.</p>
+      <div class="space-y-4">
+        <div>
+          <label class="block text-xs font-semibold text-zinc-500 mb-1.5 ml-1">납부 금액 (원)</label>
+          <input type="text" id="feeAmount" oninput="fmtInput(this)"
+            onkeydown="if(event.key==='Enter') saveFeePayment()"
+            class="w-full px-4 py-3 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl text-sm tabular-nums focus:outline-none focus:ring-2 focus:ring-navy-500 focus:border-navy-500 transition-all">
+        </div>
+      </div>
+      <div class="mt-5 flex gap-3">
+        <button onclick="deleteFeePayment()" id="feeDeleteBtn"
+          class="hidden py-3 px-4 text-sm font-semibold rounded-xl text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors flex items-center gap-1"><i
+            data-lucide="trash-2" class="w-3.5 h-3.5"></i>삭제</button>
+        <div class="flex-1 flex gap-3">
+          <button onclick="closeFeeModal()"
+            class="flex-1 py-3 text-sm font-semibold rounded-xl bg-transparent border border-zinc-200 dark:border-zinc-700 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors">취소</button>
+          <button onclick="saveFeePayment()"
+            class="flex-1 py-3 text-sm font-semibold rounded-xl bg-navy-600 text-white hover:bg-navy-700 transition-colors">저장</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====== TRANSACTION MODAL ====== -->
+  <div id="txModal" class="fixed inset-0 z-[60] hidden flex items-end sm:items-center sm:justify-center">
+    <div class="absolute inset-0 modal-backdrop transition-opacity" onclick="closeTransactionModal()"></div>
+    <div
+      class="modal-sheet relative w-full sm:w-full sm:max-w-md bg-white dark:bg-zinc-900 rounded-t-2xl sm:rounded-2xl p-6 shadow-2xl transition-all duration-300 border border-zinc-200 dark:border-zinc-700 max-h-[90vh] overflow-y-auto">
+      <div class="w-12 h-1.5 bg-zinc-300 dark:bg-zinc-600 rounded-full mx-auto mb-6 sm:hidden"></div>
+      <h2 class="text-lg font-bold mb-1" id="txModalTitle">내역 추가</h2>
+      <p class="text-sm text-zinc-500 mb-5">입금 또는 사용 내역을 입력하세요.</p>
+      <div class="space-y-4">
+        <div>
+          <label class="block text-xs font-semibold text-zinc-500 mb-1.5 ml-1">유형</label>
+          <div class="grid grid-cols-2 gap-2">
+            <button type="button" id="txTypeDeposit" onclick="setTxType('deposit')"
+              class="py-2.5 text-sm font-semibold rounded-xl border-2 transition-all flex items-center justify-center gap-1.5">
+              <i data-lucide="arrow-down-circle" class="w-4 h-4"></i>입금
+            </button>
+            <button type="button" id="txTypeExpense" onclick="setTxType('expense')"
+              class="py-2.5 text-sm font-semibold rounded-xl border-2 transition-all flex items-center justify-center gap-1.5">
+              <i data-lucide="arrow-up-circle" class="w-4 h-4"></i>사용
+            </button>
+          </div>
+        </div>
+        <div id="txCategoryRow" class="hidden">
+          <label class="block text-xs font-semibold text-zinc-500 mb-1.5 ml-1">구분</label>
+          <div class="flex flex-wrap gap-1.5" id="txCatButtons">
+            <button type="button" onclick="setTxCategory('condolence')"
+              class="tx-cat-btn px-2.5 py-1.5 text-[11px] font-bold rounded-lg border-2 transition-all">경조사</button>
+            <button type="button" onclick="setTxCategory('smallGathering')"
+              class="tx-cat-btn px-2.5 py-1.5 text-[11px] font-bold rounded-lg border-2 transition-all">소모임</button>
+            <button type="button" onclick="setTxCategory('annualEvent')"
+              class="tx-cat-btn px-2.5 py-1.5 text-[11px] font-bold rounded-lg border-2 transition-all">연례행사</button>
+            <button type="button" onclick="setTxCategory('teachersDay')"
+              class="tx-cat-btn px-2.5 py-1.5 text-[11px] font-bold rounded-lg border-2 transition-all">스승의날</button>
+          </div>
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-zinc-500 mb-1.5 ml-1">날짜</label>
+          <input type="date" id="txDate"
+            class="w-full px-4 py-3 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-navy-500 focus:border-navy-500 transition-all">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-zinc-500 mb-1.5 ml-1">금액 (원)</label>
+          <input type="text" id="txAmount" oninput="fmtInput(this)"
+            onkeydown="if(event.key==='Enter') saveTransaction()"
+            class="w-full px-4 py-3 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl text-sm tabular-nums focus:outline-none focus:ring-2 focus:ring-navy-500 focus:border-navy-500 transition-all">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-zinc-500 mb-1.5 ml-1">설명 / 사용처</label>
+          <input type="text" id="txDescription" placeholder="예: 월회비 납부, 홈커밍데이 대관료 등"
+            class="w-full px-4 py-3 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-navy-500 focus:border-navy-500 transition-all">
+        </div>
+      </div>
+      <div class="mt-5 flex gap-3">
+        <button onclick="closeTransactionModal()"
+          class="flex-1 py-3 text-sm font-semibold rounded-xl bg-transparent border border-zinc-200 dark:border-zinc-700 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors">취소</button>
+        <button onclick="saveTransaction()"
+          class="flex-1 py-3 text-sm font-semibold rounded-xl bg-navy-600 text-white hover:bg-navy-700 transition-colors">저장</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====== EVENT MODAL ====== -->
+  <div id="eventModal" class="fixed inset-0 z-[60] hidden flex items-end sm:items-center sm:justify-center">
+    <div class="absolute inset-0 modal-backdrop transition-opacity" onclick="closeEventModal()"></div>
+    <div
+      class="modal-sheet relative w-full sm:w-full sm:max-w-lg bg-white dark:bg-zinc-900 rounded-t-2xl sm:rounded-2xl p-6 shadow-2xl transition-all duration-300 border border-zinc-200 dark:border-zinc-700 max-h-[90vh] overflow-y-auto">
+      <div class="w-12 h-1.5 bg-zinc-300 dark:bg-zinc-600 rounded-full mx-auto mb-6 sm:hidden"></div>
+      <h2 class="text-lg font-bold mb-1" id="eventModalTitle">지원 등록</h2>
+      <p class="text-sm text-zinc-500 mb-5">지원 내역을 입력하세요.</p>
+      <div class="space-y-4">
+        <!-- Category selector -->
+        <div>
+          <label class="block text-xs font-semibold text-zinc-500 mb-1.5 ml-1">구분</label>
+          <div class="grid grid-cols-4 gap-1.5" id="evCatSelector"></div>
+        </div>
+        <!-- Date -->
+        <div>
+          <label class="block text-xs font-semibold text-zinc-500 mb-1.5 ml-1">날짜</label>
+          <input type="date" id="evDate"
+            class="w-full px-4 py-3 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-navy-500 focus:border-navy-500 transition-all">
+        </div>
+        <!-- Title -->
+        <div>
+          <label class="block text-xs font-semibold text-zinc-500 mb-1.5 ml-1" id="evTitleLabel">제목 / 사유</label>
+          <input type="text" id="evTitle" placeholder="예: 홍길동 결혼" onkeydown="if(event.key==='Enter') saveEvent()"
+            class="w-full px-4 py-3 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-navy-500 focus:border-navy-500 transition-all">
+        </div>
+        <!-- Target member (condolence) -->
+        <div id="evTargetMemberRow" class="hidden">
+          <label class="block text-xs font-semibold text-zinc-500 mb-1.5 ml-1">대상 회원</label>
+          <select id="evTargetMember"
+            class="w-full px-4 py-3 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-navy-500 focus:border-navy-500 transition-all">
+            <option value="">선택하세요</option>
+          </select>
+        </div>
+        <!-- Participants (smallGathering, annualEvent) -->
+        <div id="evParticipantsRow" class="hidden">
+          <label class="block text-xs font-semibold text-zinc-500 mb-1.5 ml-1">참석자 <span id="evParticipantCount"
+              class="text-navy-500">0명 선택</span></label>
+          <div
+            class="max-h-40 overflow-y-auto bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl p-3 space-y-1"
+            id="evParticipantList"></div>
+        </div>
+        <!-- Location -->
+        <div>
+          <label class="block text-xs font-semibold text-zinc-500 mb-1.5 ml-1">장소</label>
+          <input type="text" id="evLocation" placeholder="장소를 입력하세요" onkeydown="if(event.key==='Enter') saveEvent()"
+            class="w-full px-4 py-3 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-navy-500 focus:border-navy-500 transition-all">
+        </div>
+        <!-- Amount -->
+        <div>
+          <label class="block text-xs font-semibold text-zinc-500 mb-1.5 ml-1">지원 금액 (원)</label>
+          <input type="text" id="evAmount" oninput="fmtInput(this)" onkeydown="if(event.key==='Enter') saveEvent()"
+            class="w-full px-4 py-3 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl text-sm tabular-nums focus:outline-none focus:ring-2 focus:ring-navy-500 focus:border-navy-500 transition-all">
+          <p class="text-[11px] text-zinc-400 mt-1 ml-1" id="evAmountHint"></p>
+        </div>
+        <!-- Memo -->
+        <div>
+          <label class="block text-xs font-semibold text-zinc-500 mb-1.5 ml-1">메모</label>
+          <textarea id="evMemo" rows="2" placeholder="추가 메모 (선택사항)"
+            class="w-full px-4 py-3 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-navy-500 focus:border-navy-500 transition-all resize-none"></textarea>
+        </div>
+      </div>
+      <div class="mt-5 flex gap-3">
+        <button onclick="deleteEvent()" id="evDeleteBtn"
+          class="hidden py-3 px-4 text-sm font-semibold rounded-xl text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors flex items-center gap-1"><i
+            data-lucide="trash-2" class="w-3.5 h-3.5"></i>삭제</button>
+        <div class="flex-1 flex gap-3">
+          <button onclick="closeEventModal()"
+            class="flex-1 py-3 text-sm font-semibold rounded-xl bg-transparent border border-zinc-200 dark:border-zinc-700 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors">취소</button>
+          <button onclick="saveEvent()"
+            class="flex-1 py-3 text-sm font-semibold rounded-xl bg-navy-600 text-white hover:bg-navy-700 transition-colors">저장</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====== TOAST ====== -->
+  <div id="toast"
+    class="fixed bottom-6 left-1/2 -translate-x-1/2 bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 px-4 py-2.5 rounded-xl shadow-lg z-[70] flex items-center gap-2 transform translate-y-20 opacity-0 transition-all duration-300 border border-zinc-700 dark:border-zinc-300">
+    <i data-lucide="check-circle-2" class="w-4 h-4 text-emerald-400"></i>
+    <span id="toastMsg" class="text-sm font-semibold pr-1">완료!</span>
+  </div>
+
+  <!-- ====== FOOTER ====== -->
+  <footer class="bg-zinc-900 dark:bg-zinc-950 text-zinc-400 mt-auto no-print">
+    <div class="max-w-4xl mx-auto px-5 py-8">
+      <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+        <div>
+          <p class="text-sm font-bold text-white mb-1">IPSL 대학원 졸업생 모임</p>
+          <p class="text-[11px] text-zinc-500 leading-relaxed">본 회칙은 모든 회원에게 동등하게 적용됩니다.</p>
+        </div>
+        <span class="tag bg-zinc-800 text-zinc-400 border border-zinc-700 text-[11px]">시행일: 2026년 2월 6일</span>
+      </div>
+      <div class="border-t border-zinc-800 mt-5 pt-5 flex justify-between items-center text-[11px] text-zinc-600">
+        <a href="https://sites.google.com/view/powerinha/home?authuser=0" target="_blank"
+          class="hover:text-zinc-400 transition-colors">IPSL Alumni Association</a>
+        <a href="https://sites.google.com/view/powerinha/home?authuser=0" target="_blank"
+          class="hover:text-zinc-400 transition-colors">IPSL 연구실</a>
+        <span>Ctrl+P로 인쇄</span>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // ===== SAFEGUARDS =====
+    if (!window.lucide) window.lucide = { createIcons: () => { } };
+
+    // ===== DARK MODE =====
+    const DM_KEY = 'ipsl_darkMode';
+    (function () {
+      const s = localStorage.getItem(DM_KEY);
+      const p = window.matchMedia('(prefers-color-scheme:dark)').matches;
+      if (s === 'dark' || (!s && p)) document.documentElement.classList.add('dark');
+    })();
+    function initDarkMode() {
+      updateDMIcon();
+      window.matchMedia('(prefers-color-scheme:dark)').addEventListener('change', e => {
+        if (!localStorage.getItem(DM_KEY)) { document.documentElement.classList.toggle('dark', e.matches); updateDMIcon(); }
+      });
+    }
+    function toggleDarkMode() {
+      const d = document.documentElement.classList.toggle('dark');
+      localStorage.setItem(DM_KEY, d ? 'dark' : 'light'); updateDMIcon();
+    }
+    function updateDMIcon() {
+      const d = document.documentElement.classList.contains('dark');
+      const i = document.getElementById('darkModeIcon');
+      if (i) { i.setAttribute('data-lucide', d ? 'moon' : 'sun'); lucide.createIcons(); }
+    }
+
+    // ===== SETTINGS =====
+    const SETTINGS_KEY = 'ipsl_settings';
+    const DEFAULT_SETTINGS = {
+      monthlyFee: 10000,
+      condolence: 70000,
+      smallGathering: 20000,
+      smallGatheringCap: 800000,
+      annualEvent: 2000000,
+      teachersDay: 300000
+    };
+    let settings = Object.assign({}, DEFAULT_SETTINGS, JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}'));
+    function saveSettingsData() { localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings)); }
+
+    function openSettingsModal() {
+      const m = document.getElementById('settingsModal');
+      const sheet = m.querySelector('.modal-sheet');
+      document.getElementById('sMonthlyFee').value = settings.monthlyFee.toLocaleString();
+      document.getElementById('sCondolence').value = settings.condolence.toLocaleString();
+      document.getElementById('sSmallGathering').value = settings.smallGathering.toLocaleString();
+      document.getElementById('sSmallGatheringCap').value = settings.smallGatheringCap.toLocaleString();
+      document.getElementById('sAnnualEvent').value = settings.annualEvent.toLocaleString();
+      document.getElementById('sTeachersDay').value = settings.teachersDay.toLocaleString();
+      m.classList.remove('hidden');
+      void m.offsetWidth;
+      sheet.classList.add('modal-open');
+      lucide.createIcons();
+    }
+    function closeSettingsModal() {
+      const m = document.getElementById('settingsModal');
+      const sheet = m.querySelector('.modal-sheet');
+      sheet.classList.remove('modal-open');
+      setTimeout(() => m.classList.add('hidden'), 300);
+    }
+    function saveSettings() {
+      settings.monthlyFee = parseFmt(document.getElementById('sMonthlyFee').value) || DEFAULT_SETTINGS.monthlyFee;
+      settings.condolence = parseFmt(document.getElementById('sCondolence').value) || DEFAULT_SETTINGS.condolence;
+      settings.smallGathering = parseFmt(document.getElementById('sSmallGathering').value) || DEFAULT_SETTINGS.smallGathering;
+      settings.smallGatheringCap = parseFmt(document.getElementById('sSmallGatheringCap').value) || DEFAULT_SETTINGS.smallGatheringCap;
+      settings.annualEvent = parseFmt(document.getElementById('sAnnualEvent').value) || DEFAULT_SETTINGS.annualEvent;
+      settings.teachersDay = parseFmt(document.getElementById('sTeachersDay').value) || DEFAULT_SETTINGS.teachersDay;
+      saveSettingsData();
+      closeSettingsModal();
+      updateDynamicAmounts();
+      if (currentTab === 'fees') renderFeeTable();
+      if (currentTab === 'support') renderSupport();
+      if (currentTab === 'statements') renderStatements();
+      showToast('설정이 저장되었습니다');
+    }
+
+    function calcBudget() {
+      return settings.condolence * 5 + settings.smallGatheringCap + settings.annualEvent + settings.teachersDay;
+    }
+    function calcReserve() {
+      const total = settings.monthlyFee * 32 * 12;
+      const expenses = calcBudget();
+      return Math.max(0, total - expenses);
+    }
+    function fmtMan(v) { const m = v / 10000; return Number(Number.isInteger(m) ? m : m.toFixed(1)).toLocaleString(); }
+    function fmt(n) { return (n || 0).toLocaleString(); }
+
+    function updateDynamicAmounts() {
+      const budget = calcBudget();
+      const reserve = settings.monthlyFee * 32 * 12 - budget;
+      const totalBudget = budget + Math.max(0, reserve);
+      updateHeroStats();
+      // Bylaws
+      const bm = document.getElementById('bylawMonthlyFee');
+      if (bm) bm.innerHTML = settings.monthlyFee.toLocaleString() + '<span class="text-[11px] font-medium text-zinc-400">원</span>';
+      const bi = document.getElementById('bylawMonthlyIncome');
+      if (bi) bi.textContent = '월 수입 약 ' + (settings.monthlyFee * 32 / 10000).toLocaleString() + '만 원 기준';
+      const bc = document.getElementById('bylawCondolence');
+      if (bc) bc.innerHTML = settings.condolence.toLocaleString() + '<span class="text-[11px] font-medium text-zinc-400">원</span>';
+      const bsg = document.getElementById('bylawSmallGathering');
+      if (bsg) bsg.innerHTML = fmtMan(settings.smallGathering) + '<span class="text-[11px] font-medium text-zinc-400">만 원</span>';
+      const bsgc = document.getElementById('bylawSmallGatheringCap');
+      if (bsgc) bsgc.innerHTML = fmtMan(settings.smallGatheringCap) + '<span class="text-[11px] font-medium text-zinc-400">만 원</span>';
+      const bae = document.getElementById('bylawAnnualEvent');
+      if (bae) bae.innerHTML = fmtMan(settings.annualEvent) + '<span class="text-[11px] font-medium text-zinc-400">만 원</span>';
+      const btd = document.getElementById('bylawTeachersDay');
+      if (btd) btd.innerHTML = fmtMan(settings.teachersDay) + '<span class="text-[11px] font-medium text-zinc-400">만 원</span>';
+      const br = document.getElementById('bylawReserve');
+      if (br) br.innerHTML = fmtMan(Math.max(0, reserve)) + '<span class="text-[11px] font-medium text-zinc-400">만 원</span>';
+      // Budget bars & table
+      renderBudgetSection(totalBudget, reserve);
+    }
+
+    function renderBudgetSection(totalBudget, reserve) {
+      const items = [
+        { name: '홈커밍데이', color: 'navy', amount: settings.annualEvent },
+        { name: '소규모 모임', color: 'navy', amount: settings.smallGatheringCap },
+        { name: '예비비', color: 'navy', amount: Math.max(0, reserve) },
+        { name: '경조사 화환', color: 'navy', amount: settings.condolence * 5 },
+        { name: '스승의 날', color: 'navy', amount: settings.teachersDay },
+      ];
+      const total = items.reduce((s, i) => s + i.amount, 0);
+      // Bars
+      const bc = document.getElementById('budgetBarsContainer');
+      if (bc) bc.innerHTML = items.map(it => {
+        const pct = total > 0 ? (it.amount / total * 100) : 0;
+        return `<div>
+            <div class="flex items-center justify-between mb-1"><div class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded bg-${it.color}-500 flex-shrink-0"></span><span class="text-[13px] font-medium">${it.name}</span></div><span class="text-[13px] font-bold tabular-nums">${fmtMan(it.amount)}만 원</span></div>
+            <div class="budget-bar"><div class="budget-fill bg-${it.color}-500" style="width:${pct.toFixed(2)}%"></div></div>
+            <p class="text-right text-[11px] text-zinc-400 mt-0.5">${pct.toFixed(1)}%</p>
+        </div>`;
+      }).join('');
+      // Table
+      const details = [
+        { name: '경조사', color: 'navy', detail: `${(settings.condolence / 10000).toLocaleString()}만 원 x 5회`, amount: settings.condolence * 5 },
+        { name: '소모임', color: 'navy', detail: `인당 ${fmtMan(settings.smallGathering)}만 원`, amount: settings.smallGatheringCap },
+        { name: '홈커밍데이', color: 'navy', detail: '연 1회 메인 행사', amount: settings.annualEvent },
+        { name: '스승의 날', color: 'navy', detail: '감사 인사', amount: settings.teachersDay },
+        { name: '예비비', color: 'navy', detail: '비상금 + 이월', amount: Math.max(0, reserve) },
+      ];
+      const tc = document.getElementById('budgetTableContainer');
+      if (tc) tc.innerHTML = `<table class="w-full text-[13px] min-w-[460px]">
+        <thead><tr class="border-b-2 border-zinc-200 dark:border-zinc-600">
+            <th class="text-left py-2.5 px-3 font-bold">항목</th><th class="text-left py-2.5 px-3 font-bold">세부 내용</th>
+            <th class="text-right py-2.5 px-3 font-bold">금액</th><th class="text-right py-2.5 px-3 font-bold">비율</th>
+        </tr></thead>
+        <tbody class="text-zinc-600 dark:text-zinc-400">${details.map(d => {
+        const pct = total > 0 ? (d.amount / total * 100) : 0;
+        return `<tr class="border-b border-zinc-100 dark:border-zinc-700"><td class="py-2.5 px-3"><span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded bg-${d.color}-500"></span><span class="font-medium text-zinc-700 dark:text-zinc-300">${d.name}</span></span></td><td class="py-2.5 px-3 text-zinc-500">${d.detail}</td><td class="py-2.5 px-3 text-right font-medium text-zinc-800 dark:text-zinc-200 tabular-nums">${d.amount.toLocaleString()}원</td><td class="py-2.5 px-3 text-right text-zinc-500">${pct.toFixed(1)}%</td></tr>`;
+      }).join('')}</tbody>
+        <tfoot><tr class="border-t-2 border-zinc-300 dark:border-zinc-600 bg-zinc-50 dark:bg-zinc-800/50">
+            <td class="py-3 px-3 font-bold" colspan="2">총 계</td>
+            <td class="py-3 px-3 text-right font-extrabold text-navy-700 dark:text-navy-400 text-base tabular-nums">${total.toLocaleString()}원</td>
+            <td class="py-3 px-3 text-right font-bold">100%</td>
+        </tr></tfoot></table>`;
+      renderBudgetExecution();
+    }
+
+    function initBudgetYear() {
+      const sel = document.getElementById('budgetYear');
+      if (!sel) return;
+      const cy = new Date().getFullYear();
+      const cur = sel.value;
+      sel.innerHTML = '';
+      for (let y = cy + 1; y >= cy - 3; y--)
+        sel.innerHTML += `<option value="${y}" ${y === cy ? 'selected' : ''}>${y}년</option>`;
+      if (cur) sel.value = cur;
+    }
+
+    function renderBudgetExecution() {
+      const year = document.getElementById('budgetYear')?.value || String(new Date().getFullYear());
+      const yearTx = transactions.filter(tx => tx.date && tx.date.startsWith(year));
+      const totalDeposits = yearTx.filter(t => t.type === 'deposit').reduce((s, t) => s + t.amount, 0);
+      const totalExpenses = yearTx.filter(t => t.type === 'expense').reduce((s, t) => s + t.amount, 0);
+
+      const budget = calcBudget();
+      const reserve = settings.monthlyFee * 32 * 12 - budget;
+      const totalBudget = budget + Math.max(0, reserve);
+
+      const cats = [
+        { key: 'condolence', label: '경조사 화환', icon: 'heart' },
+        { key: 'smallGathering', label: '소규모 모임', icon: 'users-round' },
+        { key: 'annualEvent', label: '홈커밍데이', icon: 'calendar-heart' },
+        { key: 'teachersDay', label: '스승의 날', icon: 'graduation-cap' },
+      ];
+
+      const catData = cats.map(c => {
+        const budgetAmt = getCatBudget(c.key);
+        const spent = yearTx.filter(t => t.type === 'expense' && t.category === c.key)
+          .reduce((s, t) => s + t.amount, 0);
+        const rate = budgetAmt > 0 ? Math.round(spent / budgetAmt * 100) : 0;
+        return { ...c, budget: budgetAmt, spent, rate };
+      });
+
+      const reserveUsed = catData.reduce((s, c) => s + Math.max(0, c.spent - c.budget), 0);
+      const reserveBudget = Math.max(0, reserve);
+      const reserveRate = reserveBudget > 0 ? Math.round(reserveUsed / reserveBudget * 100) : 0;
+
+      const totalRate = totalBudget > 0 ? Math.round(totalExpenses / totalBudget * 100) : 0;
+
+      // 수입/지출 요약 카드
+      const summaryEl = document.getElementById('budgetSummaryCards');
+      if (summaryEl) summaryEl.innerHTML = `
+        <div class="bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl p-4 text-center">
+          <p class="text-[11px] text-zinc-500 mb-0.5">연간 수입 (입금)</p>
+          <p class="tabular-nums text-lg font-extrabold text-navy-600 dark:text-navy-400">${fmt(totalDeposits)}<span class="text-[11px] font-medium text-zinc-400">원</span></p>
+        </div>
+        <div class="bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl p-4 text-center">
+          <p class="text-[11px] text-zinc-500 mb-0.5">연간 지출 (집행)</p>
+          <p class="tabular-nums text-lg font-extrabold text-navy-600 dark:text-navy-400">${fmt(totalExpenses)}<span class="text-[11px] font-medium text-zinc-400">원</span></p>
+        </div>
+        <div class="bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl p-4 text-center">
+          <p class="text-[11px] text-zinc-500 mb-0.5">총 집행률</p>
+          <p class="tabular-nums text-lg font-extrabold ${totalRate > 100 ? 'text-red-600 dark:text-red-400' : totalRate >= 80 ? 'text-amber-600 dark:text-amber-400' : 'text-emerald-600 dark:text-emerald-400'}">${totalRate}<span class="text-[11px] font-medium text-zinc-400">%</span></p>
+        </div>`;
+
+      // 항목별 집행 바
+      const execEl = document.getElementById('budgetExecBars');
+      if (execEl) {
+        const allItems = [...catData, { label: '예비비', icon: 'piggy-bank', budget: reserveBudget, spent: reserveUsed, rate: reserveRate }];
+        execEl.innerHTML = allItems.map(c => {
+          const budgetPct = totalBudget > 0 ? (c.budget / totalBudget * 100) : 0;
+          const spentPct = totalBudget > 0 ? (c.spent / totalBudget * 100) : 0;
+          const rateColor = c.rate > 100 ? 'text-red-600 dark:text-red-400' : c.rate >= 80 ? 'text-amber-600 dark:text-amber-400' : 'text-navy-600 dark:text-navy-400';
+          return `<div>
+            <div class="flex items-center justify-between mb-1.5">
+              <div class="flex items-center gap-1.5">
+                <i data-lucide="${c.icon}" class="w-3.5 h-3.5 text-zinc-400"></i>
+                <span class="text-[13px] font-medium">${c.label}</span>
+              </div>
+              <div class="flex items-center gap-3">
+                <span class="text-[11px] text-zinc-400">배정 ${fmtMan(c.budget)}만</span>
+                <span class="text-[13px] font-bold tabular-nums">${fmt(c.spent)}<span class="text-[11px] text-zinc-400 font-medium ml-0.5">원</span></span>
+                <span class="text-[12px] font-bold tabular-nums ${rateColor}">${c.rate}%</span>
+              </div>
+            </div>
+            <div class="budget-bar-dual">
+              <div class="bar-budget bg-navy-500" style="width:${budgetPct.toFixed(2)}%"></div>
+              <div class="bar-spent bg-navy-600" style="width:${Math.min(spentPct, 100).toFixed(2)}%"></div>
+            </div>
+          </div>`;
+        }).join('');
+      }
+      lucide.createIcons();
+    }
+
+    // ===== TAB SWITCHING =====
+    let currentTab = 'bylaws';
+    function switchTab(tab) {
+      currentTab = tab;
+      ['bylaws', 'members', 'fees', 'support', 'statements'].forEach(t => {
+        const panel = document.getElementById('panel' + t.charAt(0).toUpperCase() + t.slice(1));
+        const btn = document.getElementById('tab' + t.charAt(0).toUpperCase() + t.slice(1));
+        if (t === tab) {
+          panel.classList.remove('hidden');
+          btn.classList.add('tab-active');
+        } else {
+          panel.classList.add('hidden');
+          btn.classList.remove('tab-active');
+        }
+      });
+      if (tab === 'bylaws') { renderBudgetExecution(); }
+      if (tab === 'members') renderMembers();
+      if (tab === 'fees') { initFeeYear(); renderFeeTable(); }
+      if (tab === 'support') { initSupportYear(); renderSupport(); }
+      if (tab === 'statements') { initStmtYear(); renderStatements(); }
+      lucide.createIcons();
+    }
+
+    // ===== DATA STORE =====
+    const MEMBERS_KEY = 'ipsl_members';
+    const FEES_KEY = 'ipsl_fees';
+    const TX_KEY = 'ipsl_transactions';
+    const EVENTS_KEY = 'ipsl_events';
+    let members = JSON.parse(localStorage.getItem(MEMBERS_KEY) || '[]');
+    let fees = JSON.parse(localStorage.getItem(FEES_KEY) || '{}');
+    let transactions = JSON.parse(localStorage.getItem(TX_KEY) || '[]');
+    let events = JSON.parse(localStorage.getItem(EVENTS_KEY) || '[]');
+    let editMemberIdx = -1;
+
+    const SUPPORT_CATS = {
+      condolence: { label: '경조사', icon: 'heart', color: 'navy' },
+      smallGathering: { label: '소모임', icon: 'users-round', color: 'navy' },
+      annualEvent: { label: '연례행사', icon: 'calendar-heart', color: 'navy' },
+      teachersDay: { label: '스승의날', icon: 'graduation-cap', color: 'navy' },
+    };
+
+    function saveMembers() { localStorage.setItem(MEMBERS_KEY, JSON.stringify(members)); updateHeroStats(); }
+    function saveFees() { localStorage.setItem(FEES_KEY, JSON.stringify(fees)); updateHeroStats(); }
+    function saveTx() { localStorage.setItem(TX_KEY, JSON.stringify(transactions)); updateHeroStats(); }
+    function saveEvents() { localStorage.setItem(EVENTS_KEY, JSON.stringify(events)); }
+
+    function updateHeroStats() {
+      const year = new Date().getFullYear();
+      // 1. Annual Expense
+      const expense = transactions
+        .filter(t => t.type === 'expense' && t.date.startsWith(year))
+        .reduce((sum, t) => sum + (t.amount || 0), 0);
+
+      // 2. Member Count
+      const memCount = members.length;
+
+      // 3. Annual Income (Paid Fees)
+      let income = 0;
+      if (fees[year]) {
+        Object.values(fees[year]).forEach(mFees => {
+          income += Object.values(mFees).reduce((s, v) => s + (v || 0), 0);
+        });
+      }
+
+      // 4. Unpaid Fees
+      let unpaid = 0;
+      const currentMonth = new Date().getMonth(); // 0-based
+      members.forEach(m => {
+        const mFees = fees[year]?.[m.id] || [];
+        for (let i = 0; i <= currentMonth; i++) {
+          const paid = mFees[i] || 0;
+          if (paid < settings.monthlyFee) {
+            unpaid += (settings.monthlyFee - paid);
+          }
+        }
+      });
+
+      // Update UI
+      const he = document.getElementById('heroTotalExpense');
+      if (he) he.innerHTML = fmtMan(expense) + '<span class="text-xs font-semibold text-slate-400 ml-0.5">만 원</span>';
+
+      const hm = document.getElementById('heroMemberCount');
+      if (hm) hm.innerHTML = memCount + '<span class="text-xs font-semibold text-slate-400 ml-0.5">명</span>';
+
+      const hi = document.getElementById('heroTotalIncome');
+      if (hi) hi.innerHTML = fmtMan(income) + '<span class="text-xs font-semibold text-slate-400 ml-0.5">만 원</span>';
+
+      const hu = document.getElementById('heroTotalUnpaid');
+      if (hu) hu.innerHTML = fmtMan(unpaid) + '<span class="text-xs font-semibold text-slate-400 ml-0.5">만 원</span>';
+    }
+
+    // Migrate old boolean fee data to amount-based
+    (function migrateFees() {
+      let changed = false;
+      Object.keys(fees).forEach(year => {
+        Object.keys(fees[year]).forEach(mid => {
+          Object.keys(fees[year][mid]).forEach(mo => {
+            const v = fees[year][mid][mo];
+            if (v === true) { fees[year][mid][mo] = settings.monthlyFee; changed = true; }
+            else if (v === false) { fees[year][mid][mo] = 0; changed = true; }
+          });
+        });
+      });
+      if (changed) localStorage.setItem(FEES_KEY, JSON.stringify(fees));
+    })();
+
+    // Migrate transactions: add category and eventId if missing
+    (function migrateTx() {
+      let changed = false;
+      transactions.forEach(tx => {
+        if (tx.category === undefined) { tx.category = null; changed = true; }
+        if (tx.eventId === undefined) { tx.eventId = null; changed = true; }
+      });
+      if (changed) saveTx();
+    })();
+
+    // ===== MEMBER CRUD =====
+    function openMemberModal(idx) {
+      editMemberIdx = typeof idx === 'number' ? idx : -1;
+      const m = document.getElementById('memberModal');
+      const sheet = m.querySelector('.modal-sheet');
+      document.getElementById('memberModalTitle').textContent = editMemberIdx >= 0 ? '회원 수정' : '회원 추가';
+      if (editMemberIdx >= 0) {
+        const mb = members[editMemberIdx];
+        document.getElementById('mName').value = mb.name || '';
+        document.getElementById('mDegree').value = mb.degree || 'Ph.D.';
+        document.getElementById('mCohort').value = mb.cohort || '';
+        document.getElementById('mRole').value = mb.role || '일반회원';
+        document.getElementById('mPhone').value = mb.phone || '';
+        document.getElementById('mEmail').value = mb.email || '';
+        document.getElementById('mEmailCompany').value = mb.emailCompany || '';
+        document.getElementById('mCompany').value = mb.company || '';
+        document.getElementById('mBirthday').value = mb.birthday || '';
+        document.getElementById('mMemo').value = mb.memo || '';
+      } else {
+        ['mName', 'mPhone', 'mEmail', 'mEmailCompany', 'mCompany', 'mBirthday', 'mMemo'].forEach(id => document.getElementById(id).value = '');
+        document.getElementById('mDegree').value = 'Ph.D.'; // Reset degree
+        document.getElementById('mRole').value = '일반회원';
+        // Default cohort to latest
+        const cohortSelect = document.getElementById('mCohort');
+        if (cohortSelect.options.length > 0) cohortSelect.selectedIndex = 0;
+      }
+      m.classList.remove('hidden');
+      void m.offsetWidth;
+      sheet.classList.add('modal-open');
+    }
+    function closeMemberModal() {
+      const m = document.getElementById('memberModal');
+      const sheet = m.querySelector('.modal-sheet');
+      sheet.classList.remove('modal-open');
+      setTimeout(() => m.classList.add('hidden'), 300);
+    }
+    function saveMember() {
+      const name = document.getElementById('mName').value.trim();
+      if (!name) { alert('이름은 필수입니다.'); return; }
+      const data = {
+        name,
+        name,
+        degree: document.getElementById('mDegree').value,
+        cohort: document.getElementById('mCohort').value,
+        role: document.getElementById('mRole').value,
+        phone: document.getElementById('mPhone').value.trim(),
+        email: document.getElementById('mEmail').value.trim(),
+        emailCompany: document.getElementById('mEmailCompany').value.trim(),
+        company: document.getElementById('mCompany').value.trim(),
+        birthday: document.getElementById('mBirthday').value.trim(),
+        memo: document.getElementById('mMemo').value.trim(),
+      };
+      if (editMemberIdx >= 0) {
+        members[editMemberIdx] = { ...members[editMemberIdx], ...data };
+      } else {
+        data.id = 'm_' + Date.now();
+        data.createdAt = new Date().toISOString();
+        members.push(data);
+      }
+      saveMembers();
+      closeMemberModal();
+      renderMembers();
+      showToast(editMemberIdx >= 0 ? '회원 정보가 수정되었습니다' : '새 회원이 등록되었습니다');
+    }
+    function deleteMember(idx) {
+      if (!confirm(members[idx].name + '님을 삭제하시겠습니까?')) return;
+      const mid = members[idx].id;
+      members.splice(idx, 1);
+      Object.keys(fees).forEach(year => {
+        if (fees[year][mid]) delete fees[year][mid];
+      });
+      saveMembers(); saveFees();
+      renderMembers();
+      showToast('회원이 삭제되었습니다');
+    }
+
+    function renderMembers() {
+      const q = (document.getElementById('memberSearch')?.value || '').toLowerCase();
+      const filtered = members.filter(m =>
+        (m.name || '').toLowerCase().includes(q) ||
+        (m.cohort || '').toLowerCase().includes(q) ||
+        (m.phone || '').includes(q)
+      );
+      const list = document.getElementById('memberList');
+      const empty = document.getElementById('memberEmpty');
+      document.getElementById('memberTotalCount').textContent = members.length;
+      if (filtered.length === 0) {
+        list.innerHTML = ''; list.classList.add('hidden'); empty.classList.remove('hidden');
+        return;
+      }
+      empty.classList.add('hidden'); list.classList.remove('hidden');
+      list.innerHTML = filtered.map((m, di) => {
+        const ri = members.indexOf(m);
+        const initial = (m.name || '?').charAt(0);
+        const roleColor = m.role === '회장' ? 'bg-navy-100 dark:bg-navy-900/30 text-navy-700 dark:text-navy-400' :
+          m.role === '총무' ? 'bg-navy-100 dark:bg-navy-900/30 text-navy-700 dark:text-navy-400' :
+            m.role === '감사' ? 'bg-navy-100 dark:bg-navy-900/30 text-navy-700 dark:text-navy-400' :
+              'bg-zinc-100 dark:bg-zinc-700 text-zinc-500 dark:text-zinc-400';
+        return `<div class="bg-white dark:bg-zinc-800 p-4 rounded-xl border border-zinc-200 dark:border-zinc-700 card-hover animate-fade-in" style="animation-delay:${di * 30}ms">
+            <div class="flex items-center justify-between mb-3">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-navy-100 dark:bg-navy-900/30 flex items-center justify-center text-sm font-bold text-navy-600 dark:text-navy-400 border border-navy-200 dark:border-navy-800">${initial}</div>
+                    <div>
+                        <h4 class="font-bold text-sm">${m.name} <span class="text-[10px] font-normal text-zinc-400 ml-0.5">${m.degree || ''}</span></h4>
+                        <p class="text-xs text-zinc-500">${m.cohort || '-'}</p>
+                    </div>
+                </div>
+                <span class="px-2 py-0.5 rounded-md text-[10px] font-bold ${roleColor}">${m.role}</span>
+            </div>
+            ${m.company ? `<p class="text-xs text-zinc-500 flex items-center gap-1.5 mb-1"><i data-lucide="building-2" class="w-3 h-3"></i>${m.company}</p>` : ''}
+            ${m.birthday ? `<p class="text-xs text-zinc-500 flex items-center gap-1.5 mb-1"><i data-lucide="cake" class="w-3 h-3"></i>${m.birthday}</p>` : ''}
+            ${m.phone ? `<p class="text-xs text-zinc-500 flex items-center gap-1.5 mb-1"><i data-lucide="phone" class="w-3 h-3"></i>${m.phone}</p>` : ''}
+            ${m.email ? `<p class="text-xs text-zinc-500 flex items-center gap-1.5 mb-1"><i data-lucide="mail" class="w-3 h-3"></i>${m.email}</p>` : ''}
+            ${m.emailCompany ? `<p class="text-xs text-zinc-500 flex items-center gap-1.5 mb-1"><i data-lucide="briefcase" class="w-3 h-3"></i>${m.emailCompany}</p>` : ''}
+            <div class="flex gap-2 mt-3 pt-3 border-t border-zinc-100 dark:border-zinc-700">
+                <button onclick="openMemberModal(${ri})" class="flex-1 py-1.5 text-xs font-semibold rounded-lg bg-zinc-50 dark:bg-zinc-700/50 hover:bg-zinc-100 dark:hover:bg-zinc-700 transition-colors flex items-center justify-center gap-1"><i data-lucide="pencil" class="w-3 h-3"></i>수정</button>
+                <button onclick="deleteMember(${ri})" class="flex-1 py-1.5 text-xs font-semibold rounded-lg text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors flex items-center justify-center gap-1"><i data-lucide="trash-2" class="w-3 h-3"></i>삭제</button>
+            </div>
+        </div>`;
+      }).join('');
+      lucide.createIcons();
+    }
+
+    function exportMembersExcel() {
+      if (members.length === 0) { alert('내보낼 데이터가 없습니다.'); return; }
+      const data = members.map(m => ({ 이름: m.name, 기수: m.cohort, 직책: m.role, 연락처: m.phone, 이메일: m.email, 메모: m.memo }));
+      const ws = XLSX.utils.json_to_sheet(data);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, '회원명부');
+      XLSX.writeFile(wb, `IPSL_회원명부_${new Date().toISOString().slice(0, 10)}.xlsx`);
+      showToast('엑셀 파일로 내보냈습니다');
+    }
+
+    // ===== FEE MANAGEMENT (Amount-based) =====
+    const MONTHS = ['1월', '2월', '3월', '4월', '5월', '6월', '7월', '8월', '9월', '10월', '11월', '12월'];
+    let feeEditTarget = null; // {memberId, year, month}
+
+    function initFeeYear() {
+      const sel = document.getElementById('feeYear');
+      const cy = new Date().getFullYear();
+      const cur = sel.value;
+      sel.innerHTML = '';
+      for (let y = cy + 1; y >= cy - 3; y--) sel.innerHTML += `<option value="${y}" ${y === cy ? 'selected' : ''}>${y}년</option>`;
+      if (cur) sel.value = cur;
+    }
+
+    function openFeeModal(memberId, year, month) {
+      feeEditTarget = { memberId, year, month };
+      const m = document.getElementById('feeModal');
+      const sheet = m.querySelector('.modal-sheet');
+      const member = members.find(mb => mb.id === memberId);
+      document.getElementById('feeModalTitle').textContent = (member?.name || '') + ' - ' + MONTHS[month] + ' 회비';
+      const current = fees[year]?.[memberId]?.[month] || 0;
+      document.getElementById('feeAmount').value = current ? current.toLocaleString() : settings.monthlyFee.toLocaleString();
+      document.getElementById('feeDeleteBtn').classList.toggle('hidden', !current);
+      document.getElementById('feeModalSub').textContent = current ? '납부 금액을 수정하세요.' : '납부 금액을 입력하세요.';
+      m.classList.remove('hidden');
+      void m.offsetWidth;
+      sheet.classList.add('modal-open');
+      lucide.createIcons();
+    }
+    function closeFeeModal() {
+      const m = document.getElementById('feeModal');
+      const sheet = m.querySelector('.modal-sheet');
+      sheet.classList.remove('modal-open');
+      setTimeout(() => m.classList.add('hidden'), 300);
+      feeEditTarget = null;
+    }
+    function saveFeePayment() {
+      if (!feeEditTarget) return;
+      const { memberId, year, month } = feeEditTarget;
+      const amount = parseFmt(document.getElementById('feeAmount').value) || 0;
+      if (amount <= 0) { alert('금액을 입력하세요.'); return; }
+      if (!fees[year]) fees[year] = {};
+      if (!fees[year][memberId]) fees[year][memberId] = {};
+      fees[year][memberId][month] = amount;
+      saveFees();
+      closeFeeModal();
+      renderFeeTable();
+      showToast('납부 내역이 저장되었습니다');
+    }
+    function deleteFeePayment() {
+      if (!feeEditTarget) return;
+      const { memberId, year, month } = feeEditTarget;
+      if (!confirm(MONTHS[month] + ' 납부 기록을 삭제하시겠습니까?')) return;
+      if (fees[year]?.[memberId]) fees[year][memberId][month] = 0;
+      saveFees();
+      closeFeeModal();
+      renderFeeTable();
+      showToast('납부 기록이 삭제되었습니다');
+    }
+
+    function renderFeeTable() {
+      const year = document.getElementById('feeYear')?.value || new Date().getFullYear();
+      const thead = document.getElementById('feeTableHead');
+      const tbody = document.getElementById('feeTableBody');
+      const empty = document.getElementById('feeEmpty');
+      const table = document.getElementById('feeTable').parentElement.parentElement;
+      const summary = document.getElementById('feeSummaryCards');
+
+      if (members.length === 0) {
+        table.classList.add('hidden'); empty.classList.remove('hidden'); summary.innerHTML = '';
+        return;
+      }
+      table.classList.remove('hidden'); empty.classList.add('hidden');
+
+      let totalPaidAmt = 0, totalExpectedAmt = members.length * 12 * settings.monthlyFee;
+      let paidCount = 0;
+      members.forEach(m => {
+        for (let mo = 0; mo < 12; mo++) {
+          const amt = fees[year]?.[m.id]?.[mo] || 0;
+          if (amt > 0) { totalPaidAmt += amt; paidCount++; }
+        }
+      });
+      const rate = (members.length * 12) > 0 ? Math.round(paidCount / (members.length * 12) * 100) : 0;
+      summary.innerHTML = `
+        <div class="bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl p-4 text-center">
+            <p class="text-[11px] text-zinc-500 mb-0.5">총 납부</p>
+            <p class="tabular-nums text-lg font-extrabold text-navy-600 dark:text-navy-400">${totalPaidAmt.toLocaleString()}<span class="text-[11px] font-medium text-zinc-400">원</span></p>
+        </div>
+        <div class="bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl p-4 text-center">
+            <p class="text-[11px] text-zinc-500 mb-0.5">미납</p>
+            <p class="tabular-nums text-lg font-extrabold text-red-600 dark:text-red-400">${(totalExpectedAmt - totalPaidAmt).toLocaleString()}<span class="text-[11px] font-medium text-zinc-400">원</span></p>
+        </div>
+        <div class="bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl p-4 text-center">
+            <p class="text-[11px] text-zinc-500 mb-0.5">납부율</p>
+            <p class="tabular-nums text-lg font-extrabold ${rate >= 80 ? 'text-emerald-600 dark:text-emerald-400' : rate >= 50 ? 'text-amber-600 dark:text-amber-400' : 'text-red-600 dark:text-red-400'}">${rate}<span class="text-[11px] font-medium text-zinc-400">%</span></p>
+        </div>
+        <div class="bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl p-4 text-center">
+            <p class="text-[11px] text-zinc-500 mb-0.5">회원 수</p>
+            <p class="tabular-nums text-lg font-extrabold">${members.length}<span class="text-[11px] font-medium text-zinc-400">명</span></p>
+        </div>`;
+
+      thead.innerHTML = `<tr class="bg-zinc-50 dark:bg-zinc-800/80 border-b border-zinc-200 dark:border-zinc-700">
+        <th class="text-left py-2.5 px-3 font-bold text-xs sticky left-0 bg-zinc-50 dark:bg-zinc-800 z-10 min-w-[100px]">회원</th>
+        ${MONTHS.map(m => `<th class="text-center py-2.5 px-2 font-bold text-xs min-w-[64px]">${m}</th>`).join('')}
+        <th class="text-right py-2.5 px-3 font-bold text-xs min-w-[90px]">합계</th>
+    </tr>`;
+
+      tbody.innerHTML = members.map(m => {
+        let paidAmt = 0, paidMo = 0;
+        const cells = MONTHS.map((_, mi) => {
+          const amt = fees[year]?.[m.id]?.[mi] || 0;
+          if (amt > 0) { paidAmt += amt; paidMo++; }
+          return `<td class="text-center py-2 px-1">
+                <button onclick="openFeeModal('${m.id}','${year}',${mi})" class="w-full min-w-[56px] h-7 rounded-lg text-[10px] font-bold transition-all tabular-nums ${amt > 0 ? 'status-paid' : 'status-unpaid hover:bg-red-100 dark:hover:bg-red-900/30'}" title="${MONTHS[mi]}: ${amt > 0 ? fmt(amt) + '원' : '미납'}">
+                    ${amt > 0 ? fmt(amt) : 'X'}
+                </button>
+            </td>`;
+        }).join('');
+        return `<tr class="border-b border-zinc-100 dark:border-zinc-700/50 hover:bg-zinc-50/50 dark:hover:bg-zinc-800/50">
+            <td class="py-2.5 px-3 sticky left-0 bg-white dark:bg-zinc-800 z-10"><span class="text-sm font-semibold">${m.name}</span><span class="text-[10px] text-zinc-400 ml-1">${m.cohort || ''}</span></td>
+            ${cells}
+            <td class="text-right py-2.5 px-3 tabular-nums text-xs font-bold ${paidMo === 12 ? 'text-emerald-600 dark:text-emerald-400' : paidMo >= 6 ? 'text-amber-600 dark:text-amber-400' : 'text-red-600 dark:text-red-400'}">${fmt(paidAmt)}원</td>
+        </tr>`;
+      }).join('');
+      lucide.createIcons();
+    }
+
+    function exportFeesExcel() {
+      if (members.length === 0) { alert('내보낼 데이터가 없습니다.'); return; }
+      const year = document.getElementById('feeYear').value;
+      const data = members.map(m => {
+        const row = { 이름: m.name, 기수: m.cohort || '' };
+        let totalAmt = 0;
+        MONTHS.forEach((mn, mi) => {
+          const amt = fees[year]?.[m.id]?.[mi] || 0;
+          row[mn] = amt > 0 ? amt.toLocaleString() + '원' : '미납';
+          totalAmt += amt;
+        });
+        row['납부합계'] = totalAmt.toLocaleString() + '원';
+        return row;
+      });
+      const ws = XLSX.utils.json_to_sheet(data);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, year + '년 회비');
+      XLSX.writeFile(wb, `IPSL_회비관리_${year}.xlsx`);
+      showToast('엑셀 파일로 내보냈습니다');
+    }
+
+    // ===== TRANSACTION LEDGER =====
+    let editTxIdx = -1;
+    let txType = 'deposit';
+    let txCategory = null;
+
+    function setTxType(type) {
+      txType = type;
+      const dBtn = document.getElementById('txTypeDeposit');
+      const eBtn = document.getElementById('txTypeExpense');
+      if (type === 'deposit') {
+        dBtn.className = 'py-2.5 text-sm font-semibold rounded-xl border-2 border-navy-500 bg-navy-50 dark:bg-navy-950/50 text-navy-700 dark:text-navy-400 transition-all flex items-center justify-center gap-1.5';
+        eBtn.className = 'py-2.5 text-sm font-semibold rounded-xl border-2 border-zinc-200 dark:border-zinc-700 text-zinc-500 hover:border-zinc-300 transition-all flex items-center justify-center gap-1.5';
+      } else {
+        eBtn.className = 'py-2.5 text-sm font-semibold rounded-xl border-2 border-navy-500 bg-navy-50 dark:bg-navy-950/50 text-navy-700 dark:text-navy-400 transition-all flex items-center justify-center gap-1.5';
+        dBtn.className = 'py-2.5 text-sm font-semibold rounded-xl border-2 border-zinc-200 dark:border-zinc-700 text-zinc-500 hover:border-zinc-300 transition-all flex items-center justify-center gap-1.5';
+      }
+      // Show/hide category row
+      const catRow = document.getElementById('txCategoryRow');
+      if (catRow) catRow.classList.toggle('hidden', type === 'deposit');
+      if (type === 'deposit') { txCategory = null; updateTxCatButtons(); }
+      else if (!txCategory) { txCategory = 'condolence'; updateTxCatButtons(); }
+      lucide.createIcons();
+    }
+
+    function setTxCategory(cat) {
+      txCategory = cat;
+      updateTxCatButtons();
+    }
+    function updateTxCatButtons() {
+      const catMap = ['condolence', 'smallGathering', 'annualEvent', 'teachersDay'];
+      const colorMap = { condolence: 'navy', smallGathering: 'navy', annualEvent: 'navy', teachersDay: 'navy' };
+      document.querySelectorAll('.tx-cat-btn').forEach((btn, i) => {
+        const c = catMap[i];
+        const col = colorMap[c];
+        if (c === txCategory) {
+          btn.className = `tx-cat-btn px-2.5 py-1.5 text-[11px] font-bold rounded-lg border-2 border-${col}-500 bg-${col}-50 dark:bg-${col}-950/50 text-${col}-700 dark:text-${col}-400 transition-all`;
+        } else {
+          btn.className = 'tx-cat-btn px-2.5 py-1.5 text-[11px] font-bold rounded-lg border-2 border-zinc-200 dark:border-zinc-700 text-zinc-500 hover:border-zinc-300 transition-all';
+        }
+      });
+    }
+
+    function openTransactionModal(idx) {
+      editTxIdx = typeof idx === 'number' ? idx : -1;
+      const m = document.getElementById('txModal');
+      const sheet = m.querySelector('.modal-sheet');
+      document.getElementById('txModalTitle').textContent = editTxIdx >= 0 ? '내역 수정' : '내역 추가';
+      if (editTxIdx >= 0) {
+        const tx = transactions[editTxIdx];
+        setTxType(tx.type);
+        txCategory = tx.category || (tx.type === 'expense' ? 'condolence' : null);
+        updateTxCatButtons();
+        document.getElementById('txDate').value = tx.date || '';
+        document.getElementById('txAmount').value = tx.amount ? tx.amount.toLocaleString() : '';
+        document.getElementById('txDescription').value = tx.description || '';
+      } else {
+        setTxType('deposit');
+        txCategory = null;
+        updateTxCatButtons();
+        document.getElementById('txDate').value = new Date().toISOString().slice(0, 10);
+        document.getElementById('txAmount').value = '';
+        document.getElementById('txDescription').value = '';
+      }
+      m.classList.remove('hidden');
+      void m.offsetWidth;
+      sheet.classList.add('modal-open');
+      lucide.createIcons();
+    }
+    function closeTransactionModal() {
+      const m = document.getElementById('txModal');
+      const sheet = m.querySelector('.modal-sheet');
+      sheet.classList.remove('modal-open');
+      setTimeout(() => m.classList.add('hidden'), 300);
+      editTxIdx = -1;
+    }
+    function saveTransaction() {
+      const amount = parseFmt(document.getElementById('txAmount').value) || 0;
+      if (amount <= 0) { alert('금액을 입력하세요.'); return; }
+      const date = document.getElementById('txDate').value;
+      if (!date) { alert('날짜를 선택하세요.'); return; }
+      const data = {
+        type: txType,
+        date,
+        amount,
+        description: document.getElementById('txDescription').value.trim(),
+        category: txType === 'expense' ? txCategory : null,
+      };
+      const isEdit = editTxIdx >= 0;
+      if (isEdit) {
+        const existing = transactions[editTxIdx];
+        transactions[editTxIdx] = { ...existing, ...data };
+        const tx = transactions[editTxIdx];
+        if (existing.eventId) {
+          if (data.type === 'expense' && data.category) {
+            // Update linked event
+            const ev = events.find(e => e.id === existing.eventId);
+            if (ev) {
+              ev.date = data.date;
+              ev.amount = data.amount;
+              ev.title = data.description || ev.title;
+              ev.category = data.category;
+              saveEvents();
+            }
+          } else {
+            // Changed to deposit or no category — remove linked event
+            const ei = events.findIndex(e => e.id === existing.eventId);
+            if (ei >= 0) events.splice(ei, 1);
+            tx.eventId = null;
+            saveEvents();
+          }
+        } else if (data.type === 'expense' && data.category) {
+          // No linked event yet — create one
+          const ev = {
+            id: 'ev_' + (Date.now() + 1), category: data.category, date: data.date,
+            title: data.description || (SUPPORT_CATS[data.category]?.label || ''),
+            location: '', targetMember: '', participants: [], amount: data.amount,
+            memo: '', txId: tx.id, createdAt: new Date().toISOString()
+          };
+          tx.eventId = ev.id;
+          events.push(ev); saveEvents();
+        }
+      } else {
+        data.id = 't_' + Date.now();
+        data.createdAt = new Date().toISOString();
+        if (data.type === 'expense' && data.category) {
+          // Auto-create linked event
+          const ev = {
+            id: 'ev_' + (Date.now() + 1), category: data.category, date: data.date,
+            title: data.description || (SUPPORT_CATS[data.category]?.label || ''),
+            location: '', targetMember: '', participants: [], amount: data.amount,
+            memo: '', txId: data.id, createdAt: new Date().toISOString()
+          };
+          data.eventId = ev.id;
+          events.push(ev); saveEvents();
+        } else {
+          data.eventId = null;
+        }
+        transactions.push(data);
+      }
+      saveTx();
+      closeTransactionModal();
+      renderStatements();
+      renderSupport();
+      showToast(isEdit ? '내역이 수정되었습니다' : '내역이 추가되었습니다');
+    }
+    function deleteTransaction(idx) {
+      const tx = transactions[idx];
+      const hasEvent = tx && tx.eventId;
+      if (!confirm('이 내역을 삭제하시겠습니까?' + (hasEvent ? '\n연결된 지원 내역도 함께 삭제됩니다.' : ''))) return;
+      if (hasEvent) {
+        const ei = events.findIndex(e => e.id === tx.eventId);
+        if (ei >= 0) events.splice(ei, 1);
+        saveEvents();
+      }
+      transactions.splice(idx, 1);
+      saveTx();
+      renderStatements();
+      renderSupport();
+      showToast('내역이 삭제되었습니다');
+    }
+
+    // ===== STATEMENTS =====
+    function initStmtYear() {
+      const sel = document.getElementById('stmtYear');
+      const cy = new Date().getFullYear();
+      const cur = sel.value;
+      sel.innerHTML = '';
+      for (let y = cy + 1; y >= cy - 3; y--) sel.innerHTML += `<option value="${y}" ${y === cy ? 'selected' : ''}>${y}년</option>`;
+      if (cur) sel.value = cur;
+    }
+
+    function renderStatements() {
+      const year = document.getElementById('stmtYear')?.value || String(new Date().getFullYear());
+      const content = document.getElementById('stmtContent');
+      const empty = document.getElementById('stmtEmpty');
+      const txSummary = document.getElementById('txSummaryCards');
+      const txList = document.getElementById('txList');
+      const txEmpty = document.getElementById('txEmpty');
+
+      // Transaction ledger for selected year
+      const yearTx = transactions.filter(tx => tx.date && tx.date.startsWith(year)).sort((a, b) => b.date.localeCompare(a.date));
+      const totalDeposits = yearTx.filter(t => t.type === 'deposit').reduce((s, t) => s + t.amount, 0);
+      const totalExpenses = yearTx.filter(t => t.type === 'expense').reduce((s, t) => s + t.amount, 0);
+      const balance = totalDeposits - totalExpenses;
+
+      txSummary.innerHTML = `
+        <div class="bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl p-4 text-center">
+            <p class="text-[11px] text-zinc-500 mb-0.5">총 입금</p>
+            <p class="tabular-nums text-lg font-extrabold text-navy-600 dark:text-navy-400">${totalDeposits.toLocaleString()}<span class="text-[11px] font-medium text-zinc-400">원</span></p>
+        </div>
+        <div class="bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl p-4 text-center">
+            <p class="text-[11px] text-zinc-500 mb-0.5">총 사용</p>
+            <p class="tabular-nums text-lg font-extrabold text-navy-600 dark:text-navy-400">${totalExpenses.toLocaleString()}<span class="text-[11px] font-medium text-zinc-400">원</span></p>
+        </div>
+        <div class="bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl p-4 text-center">
+            <p class="text-[11px] text-zinc-500 mb-0.5">잔액</p>
+            <p class="tabular-nums text-lg font-extrabold ${balance >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'}">${balance.toLocaleString()}<span class="text-[11px] font-medium text-zinc-400">원</span></p>
+        </div>`;
+
+      if (yearTx.length === 0) {
+        txList.innerHTML = ''; txEmpty.classList.remove('hidden');
+      } else {
+        txEmpty.classList.add('hidden');
+        txList.innerHTML = yearTx.map(tx => {
+          const gi = transactions.indexOf(tx);
+          const isDeposit = tx.type === 'deposit';
+          return `<div class="bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl p-4 flex items-center justify-between gap-3 animate-fade-in">
+                <div class="flex items-center gap-3 min-w-0">
+                    <div class="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 bg-navy-50 dark:bg-navy-950/50 text-navy-600 dark:text-navy-400">
+                        <i data-lucide="${isDeposit ? 'arrow-down-circle' : 'arrow-up-circle'}" class="w-4.5 h-4.5"></i>
+                    </div>
+                    <div class="min-w-0">
+                        <div class="flex items-center gap-2 flex-wrap">
+                            <span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-navy-50 dark:bg-navy-950/50 text-navy-600 dark:text-navy-400">${isDeposit ? '입금' : '사용'}</span>
+                            ${tx.category && SUPPORT_CATS[tx.category] ? `<span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-${SUPPORT_CATS[tx.category].color}-50 dark:bg-${SUPPORT_CATS[tx.category].color}-950/50 text-${SUPPORT_CATS[tx.category].color}-600 dark:text-${SUPPORT_CATS[tx.category].color}-400">${SUPPORT_CATS[tx.category].label}</span>` : ''}
+                            <span class="text-[11px] text-zinc-400">${tx.date}</span>
+                        </div>
+                        <p class="text-sm font-medium truncate mt-0.5">${tx.description || '(설명 없음)'}</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2 flex-shrink-0">
+                    <span class="tabular-nums text-sm font-bold text-navy-600 dark:text-navy-400">${isDeposit ? '+' : '-'}${tx.amount.toLocaleString()}원</span>
+                    <div class="flex gap-1">
+                        <button onclick="openTransactionModal(${gi})" class="p-1.5 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-700 transition-colors" title="수정"><i data-lucide="pencil" class="w-3.5 h-3.5 text-zinc-400"></i></button>
+                        <button onclick="deleteTransaction(${gi})" class="p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors" title="삭제"><i data-lucide="trash-2" class="w-3.5 h-3.5 text-red-400"></i></button>
+                    </div>
+                </div>
+            </div>`;
+        }).join('');
+      }
+
+      // Per-member fee summary
+      if (members.length === 0) { content.innerHTML = ''; empty.classList.remove('hidden'); lucide.createIcons(); return; }
+      empty.classList.add('hidden');
+
+      let totalPaidAmt = 0, totalExpectedAmt = members.length * 12 * settings.monthlyFee;
+      members.forEach(m => { for (let i = 0; i < 12; i++) { const a = fees[year]?.[m.id]?.[i] || 0; if (a > 0) totalPaidAmt += a; } });
+      const rate = totalExpectedAmt > 0 ? Math.round(totalPaidAmt / totalExpectedAmt * 100) : 0;
+
+      let html = `<div class="bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-2xl p-5 relative overflow-hidden">
+        <div class="accent-bar bar-navy"></div>
+        <div class="flex items-center gap-2.5 mb-4 pt-1">
+            <div class="badge-icon bg-navy-50 dark:bg-navy-950/50 text-navy-600 dark:text-navy-400"><i data-lucide="bar-chart-3" class="w-5 h-5"></i></div>
+            <div>
+                <span class="tag bg-navy-50 dark:bg-navy-950/50 text-navy-700 dark:text-navy-400">${year}년</span>
+                <h3 class="text-lg font-bold mt-0.5">회비 납부 종합</h3>
+            </div>
+        </div>
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5">
+            <div class="bg-zinc-50 dark:bg-zinc-800/50 rounded-xl p-3 border border-zinc-100 dark:border-zinc-700/50 text-center">
+                <p class="text-[11px] text-zinc-500">총 예상 수입</p>
+                <p class="tabular-nums text-base font-extrabold mt-0.5">${totalExpectedAmt.toLocaleString()}원</p>
+            </div>
+            <div class="bg-zinc-50 dark:bg-zinc-800/50 rounded-xl p-3 border border-zinc-100 dark:border-zinc-700/50 text-center">
+                <p class="text-[11px] text-zinc-500">실제 수입</p>
+                <p class="tabular-nums text-base font-extrabold text-navy-600 dark:text-navy-400 mt-0.5">${totalPaidAmt.toLocaleString()}원</p>
+            </div>
+            <div class="bg-zinc-50 dark:bg-zinc-800/50 rounded-xl p-3 border border-zinc-100 dark:border-zinc-700/50 text-center">
+                <p class="text-[11px] text-zinc-500">미납 금액</p>
+                <p class="tabular-nums text-base font-extrabold text-red-600 dark:text-red-400 mt-0.5">${(totalExpectedAmt - totalPaidAmt).toLocaleString()}원</p>
+            </div>
+            <div class="bg-zinc-50 dark:bg-zinc-800/50 rounded-xl p-3 border border-zinc-100 dark:border-zinc-700/50 text-center">
+                <p class="text-[11px] text-zinc-500">전체 납부율</p>
+                <p class="tabular-nums text-base font-extrabold ${rate >= 80 ? 'text-emerald-600 dark:text-emerald-400' : rate >= 50 ? 'text-amber-600 dark:text-amber-400' : 'text-red-600 dark:text-red-400'} mt-0.5">${rate}%</p>
+            </div>
+        </div>
+        <div class="budget-bar mb-2"><div class="budget-fill bg-navy-500" style="width:${rate}%"></div></div>
+        <p class="text-[11px] text-zinc-500 text-right">${totalPaidAmt.toLocaleString()} / ${totalExpectedAmt.toLocaleString()} 원</p>
+    </div>`;
+
+      html += `<div class="grid grid-cols-1 sm:grid-cols-2 gap-3">`;
+      members.forEach(m => {
+        let paidAmt = 0, paidMo = 0;
+        const monthStatus = MONTHS.map((_, mi) => {
+          const amt = fees[year]?.[m.id]?.[mi] || 0;
+          if (amt > 0) { paidAmt += amt; paidMo++; }
+          return `<span class="inline-flex items-center justify-center min-w-[28px] h-7 px-1 rounded-md text-[10px] font-bold tabular-nums ${amt > 0 ? 'status-paid' : 'status-unpaid'}" title="${MONTHS[mi]}: ${amt > 0 ? fmt(amt) + '원' : '미납'}">${amt > 0 ? fmt(amt) : 'X'}</span>`;
+        }).join('');
+        html += `<div class="bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl p-4">
+            <div class="flex items-center justify-between mb-3">
+                <div class="flex items-center gap-2.5">
+                    <div class="w-8 h-8 rounded-lg bg-navy-100 dark:bg-navy-900/30 flex items-center justify-center text-xs font-bold text-navy-600 dark:text-navy-400">${(m.name || '?').charAt(0)}</div>
+                    <div>
+                        <p class="text-sm font-bold">${m.name}</p>
+                        <p class="text-[10px] text-zinc-500">${m.cohort || '-'}</p>
+                    </div>
+                </div>
+                <span class="tabular-nums text-sm font-bold ${paidMo === 12 ? 'text-emerald-600 dark:text-emerald-400' : paidMo >= 6 ? 'text-amber-600 dark:text-amber-400' : 'text-red-600 dark:text-red-400'}">${paidMo}/12</span>
+            </div>
+            <div class="flex flex-wrap gap-1 mb-2">${monthStatus}</div>
+            <div class="flex items-center justify-between text-[11px] text-zinc-500 pt-2 border-t border-zinc-100 dark:border-zinc-700/50">
+                <span>납부: ${paidAmt.toLocaleString()}원</span>
+                <span>미납: ${(12 * settings.monthlyFee - paidAmt).toLocaleString()}원</span>
+            </div>
+        </div>`;
+      });
+      html += `</div>`;
+
+      content.innerHTML = html;
+      lucide.createIcons();
+    }
+
+    function printStatements() { window.print(); }
+
+    // ===== SUPPORT MANAGEMENT =====
+    let currentSupportCat = 'condolence';
+    let editEventIdx = -1;
+    let evCategory = 'condolence';
+
+    function initSupportYear() {
+      const sel = document.getElementById('supportYear');
+      const cy = new Date().getFullYear();
+      const cur = sel.value;
+      sel.innerHTML = '';
+      for (let y = cy + 1; y >= cy - 3; y--) sel.innerHTML += `<option value="${y}" ${y === cy ? 'selected' : ''}>${y}년</option>`;
+      if (cur) sel.value = cur;
+    }
+
+    function getCatBudget(cat) {
+      if (cat === 'condolence') return settings.condolence * 5;
+      if (cat === 'smallGathering') return settings.smallGatheringCap;
+      if (cat === 'annualEvent') return settings.annualEvent;
+      if (cat === 'teachersDay') return settings.teachersDay;
+      return 0;
+    }
+
+    function renderSupport() {
+      const year = document.getElementById('supportYear')?.value || String(new Date().getFullYear());
+      const pills = document.getElementById('supportCatPills');
+      const summary = document.getElementById('supportSummaryCards');
+      const list = document.getElementById('supportEventList');
+      const empty = document.getElementById('supportEmpty');
+
+      // Category pills
+      pills.innerHTML = Object.entries(SUPPORT_CATS).map(([key, cat]) => {
+        const active = key === currentSupportCat;
+        return `<button onclick="currentSupportCat='${key}';renderSupport()" class="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all ${active ? `bg-${cat.color}-50 dark:bg-${cat.color}-950/50 text-${cat.color}-700 dark:text-${cat.color}-400 border-2 border-${cat.color}-300 dark:border-${cat.color}-700` : 'bg-white dark:bg-zinc-800 border-2 border-zinc-200 dark:border-zinc-700 text-zinc-500 hover:border-zinc-300'}">
+            <i data-lucide="${cat.icon}" class="w-3.5 h-3.5"></i>${cat.label}
+        </button>`;
+      }).join('');
+
+      // Filter events
+      const catEvents = events.filter(ev => ev.category === currentSupportCat && ev.date && ev.date.startsWith(year))
+        .sort((a, b) => b.date.localeCompare(a.date));
+      const catInfo = SUPPORT_CATS[currentSupportCat];
+      const totalAmount = catEvents.reduce((s, ev) => s + ev.amount, 0);
+      const budget = getCatBudget(currentSupportCat);
+      const usageRate = budget > 0 ? Math.round(totalAmount / budget * 100) : 0;
+
+      // Summary cards
+      summary.innerHTML = `
+        <div class="bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl p-4 text-center">
+            <p class="text-[11px] text-zinc-500 mb-0.5">건수</p>
+            <p class="tabular-nums text-lg font-extrabold text-${catInfo.color}-600 dark:text-${catInfo.color}-400">${catEvents.length}<span class="text-[11px] font-medium text-zinc-400">건</span></p>
+        </div>
+        <div class="bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl p-4 text-center">
+            <p class="text-[11px] text-zinc-500 mb-0.5">총 지원액</p>
+            <p class="tabular-nums text-lg font-extrabold text-${catInfo.color}-600 dark:text-${catInfo.color}-400">${fmt(totalAmount)}<span class="text-[11px] font-medium text-zinc-400">원</span></p>
+        </div>
+        <div class="bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl p-4 text-center">
+            <p class="text-[11px] text-zinc-500 mb-0.5">예산</p>
+            <p class="tabular-nums text-lg font-extrabold">${fmt(budget)}<span class="text-[11px] font-medium text-zinc-400">원</span></p>
+        </div>
+        <div class="bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl p-4 text-center">
+            <p class="text-[11px] text-zinc-500 mb-0.5">사용률</p>
+            <p class="tabular-nums text-lg font-extrabold ${usageRate > 100 ? 'text-red-600 dark:text-red-400' : usageRate >= 80 ? 'text-amber-600 dark:text-amber-400' : 'text-emerald-600 dark:text-emerald-400'}">${usageRate}<span class="text-[11px] font-medium text-zinc-400">%</span></p>
+        </div>`;
+
+      if (catEvents.length === 0) {
+        list.innerHTML = ''; empty.classList.remove('hidden');
+      } else {
+        empty.classList.add('hidden');
+        list.innerHTML = catEvents.map(ev => {
+          const gi = events.indexOf(ev);
+          const member = ev.targetMember ? members.find(m => m.id === ev.targetMember) : null;
+          const participantNames = (ev.participants || []).map(pid => {
+            const pm = members.find(m => m.id === pid);
+            return pm ? pm.name : '(삭제됨)';
+          });
+          let detailHtml = '';
+          if (ev.category === 'condolence' && member) {
+            detailHtml = `<p class="text-xs text-zinc-500 flex items-center gap-1.5 mt-1"><i data-lucide="user" class="w-3 h-3"></i>대상: ${member.name}${member.cohort ? ' (' + member.cohort + ')' : ''}</p>`;
+          }
+          if ((ev.category === 'smallGathering' || ev.category === 'annualEvent') && participantNames.length > 0) {
+            detailHtml = `<p class="text-xs text-zinc-500 flex items-center gap-1.5 mt-1"><i data-lucide="users" class="w-3 h-3"></i>참석자: ${participantNames.join(', ')} (${participantNames.length}명)</p>`;
+            if (ev.category === 'smallGathering' && participantNames.length > 0) {
+              detailHtml += `<p class="text-[11px] text-zinc-400 ml-[18px]">${participantNames.length}명 x ${fmt(settings.smallGathering)}원 = ${fmt(participantNames.length * settings.smallGathering)}원</p>`;
+            }
+          }
+          return `<div class="bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl p-4 relative overflow-hidden card-hover animate-fade-in">
+                <div class="accent-bar bar-${catInfo.color}"></div>
+                <div class="flex items-start justify-between gap-3 pt-1">
+                    <div class="flex items-start gap-3 min-w-0">
+                        <div class="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 bg-${catInfo.color}-50 dark:bg-${catInfo.color}-950/50 text-${catInfo.color}-600 dark:text-${catInfo.color}-400">
+                            <i data-lucide="${catInfo.icon}" class="w-4 h-4"></i>
+                        </div>
+                        <div class="min-w-0">
+                            <div class="flex items-center gap-2 flex-wrap">
+                                <span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-${catInfo.color}-50 dark:bg-${catInfo.color}-950/50 text-${catInfo.color}-600 dark:text-${catInfo.color}-400">${catInfo.label}</span>
+                                <span class="text-[11px] text-zinc-400">${ev.date}</span>
+                            </div>
+                            <p class="text-sm font-bold mt-1">${ev.title || '(제목 없음)'}</p>
+                            ${ev.location ? `<p class="text-xs text-zinc-500 flex items-center gap-1.5 mt-1"><i data-lucide="map-pin" class="w-3 h-3"></i>${ev.location}</p>` : ''}
+                            ${detailHtml}
+                            ${ev.memo ? `<p class="text-xs text-zinc-400 mt-1">${ev.memo}</p>` : ''}
+                        </div>
+                    </div>
+                    <div class="text-right flex-shrink-0">
+                        <p class="tabular-nums text-sm font-bold text-${catInfo.color}-600 dark:text-${catInfo.color}-400">${fmt(ev.amount)}원</p>
+                        <div class="flex gap-1 mt-2 justify-end">
+                            <button onclick="openEventModal(${gi})" class="p-1.5 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-700 transition-colors" title="수정"><i data-lucide="pencil" class="w-3.5 h-3.5 text-zinc-400"></i></button>
+                            <button onclick="deleteEvent(${gi})" class="p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors" title="삭제"><i data-lucide="trash-2" class="w-3.5 h-3.5 text-red-400"></i></button>
+                        </div>
+                    </div>
+                </div>
+            </div>`;
+        }).join('');
+      }
+      lucide.createIcons();
+    }
+
+    // ===== EVENT CRUD =====
+    function updateEvCatSelector() {
+      const sel = document.getElementById('evCatSelector');
+      sel.innerHTML = Object.entries(SUPPORT_CATS).map(([key, cat]) => {
+        const active = key === evCategory;
+        return `<button type="button" onclick="setEvCategory('${key}')" class="py-2 text-[11px] font-bold rounded-lg border-2 transition-all flex items-center justify-center gap-1 ${active ? `border-${cat.color}-500 bg-${cat.color}-50 dark:bg-${cat.color}-950/50 text-${cat.color}-700 dark:text-${cat.color}-400` : 'border-zinc-200 dark:border-zinc-700 text-zinc-500 hover:border-zinc-300'}">
+            <i data-lucide="${cat.icon}" class="w-3 h-3"></i>${cat.label}
+        </button>`;
+      }).join('');
+      lucide.createIcons();
+    }
+
+    function setEvCategory(cat) {
+      evCategory = cat;
+      updateEvCatSelector();
+      // Show/hide conditional fields
+      document.getElementById('evTargetMemberRow').classList.toggle('hidden', cat !== 'condolence');
+      document.getElementById('evParticipantsRow').classList.toggle('hidden', cat !== 'smallGathering' && cat !== 'annualEvent');
+      // Update amount hint and default
+      const hint = document.getElementById('evAmountHint');
+      const amountInput = document.getElementById('evAmount');
+      if (cat === 'condolence') {
+        hint.textContent = '기준액: ' + fmt(settings.condolence) + '원';
+        if (!amountInput.value) amountInput.value = settings.condolence.toLocaleString();
+      } else if (cat === 'smallGathering') {
+        updateEvSmallGatheringCalc();
+      } else if (cat === 'annualEvent') {
+        hint.textContent = '기준액: ' + fmt(settings.annualEvent) + '원';
+        if (!amountInput.value) amountInput.value = settings.annualEvent.toLocaleString();
+      } else if (cat === 'teachersDay') {
+        hint.textContent = '기준액: ' + fmt(settings.teachersDay) + '원';
+        if (!amountInput.value) amountInput.value = settings.teachersDay.toLocaleString();
+      }
+      // Update title label
+      const label = document.getElementById('evTitleLabel');
+      if (cat === 'condolence') label.textContent = '사유 (결혼/상 등)';
+      else if (cat === 'smallGathering') label.textContent = '모임명';
+      else if (cat === 'annualEvent') label.textContent = '행사명';
+      else label.textContent = '행사명';
+    }
+
+    function updateEvSmallGatheringCalc() {
+      const checked = document.querySelectorAll('.ev-participant-cb:checked');
+      const count = checked.length;
+      const calcAmount = count * settings.smallGathering;
+      const hint = document.getElementById('evAmountHint');
+      if (count > 0) {
+        hint.textContent = count + '명 x ' + fmt(settings.smallGathering) + '원 = ' + fmt(calcAmount) + '원';
+        document.getElementById('evAmount').value = calcAmount.toLocaleString();
+      } else {
+        hint.textContent = '1인당 ' + fmt(settings.smallGathering) + '원 (참석자 선택 시 자동계산)';
+      }
+      document.getElementById('evParticipantCount').textContent = count + '명 선택';
+    }
+
+    function populateEventFields() {
+      // Target member dropdown
+      const sel = document.getElementById('evTargetMember');
+      sel.innerHTML = '<option value="">선택하세요</option>' + members.map(m =>
+        `<option value="${m.id}">${m.name}${m.cohort ? ' (' + m.cohort + ')' : ''}</option>`
+      ).join('');
+      // Participant checkboxes
+      const pList = document.getElementById('evParticipantList');
+      pList.innerHTML = members.map(m =>
+        `<label class="flex items-center gap-2.5 px-2 py-1.5 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-700/50 cursor-pointer transition-colors">
+            <input type="checkbox" class="ev-participant-cb rounded border-zinc-300 dark:border-zinc-600 text-navy-600 focus:ring-navy-500" value="${m.id}" onchange="onEvParticipantChange()">
+            <span class="text-sm">${m.name}</span>
+            <span class="text-[10px] text-zinc-400">${m.cohort || ''}</span>
+        </label>`
+      ).join('');
+    }
+
+    function updateEvParticipantCount() {
+      const count = document.querySelectorAll('.ev-participant-cb:checked').length;
+      document.getElementById('evParticipantCount').textContent = count + '명 선택';
+    }
+
+    function onEvParticipantChange() {
+      if (evCategory === 'smallGathering') updateEvSmallGatheringCalc();
+      else updateEvParticipantCount();
+    }
+
+    function openEventModal(idx) {
+      editEventIdx = typeof idx === 'number' ? idx : -1;
+      const m = document.getElementById('eventModal');
+      const sheet = m.querySelector('.modal-sheet');
+      document.getElementById('eventModalTitle').textContent = editEventIdx >= 0 ? '지원 수정' : '지원 등록';
+      document.getElementById('evDeleteBtn').classList.toggle('hidden', editEventIdx < 0);
+
+      populateEventFields();
+
+      if (editEventIdx >= 0) {
+        const ev = events[editEventIdx];
+        evCategory = ev.category || 'condolence';
+        document.getElementById('evDate').value = ev.date || '';
+        document.getElementById('evTitle').value = ev.title || '';
+        document.getElementById('evTargetMember').value = ev.targetMember || '';
+        document.getElementById('evLocation').value = ev.location || '';
+        document.getElementById('evAmount').value = ev.amount ? ev.amount.toLocaleString() : '';
+        document.getElementById('evMemo').value = ev.memo || '';
+        // Check participants
+        (ev.participants || []).forEach(pid => {
+          const cb = document.querySelector(`.ev-participant-cb[value="${pid}"]`);
+          if (cb) cb.checked = true;
+        });
+      } else {
+        evCategory = currentSupportCat || 'condolence';
+        document.getElementById('evDate').value = new Date().toISOString().slice(0, 10);
+        document.getElementById('evTitle').value = '';
+        document.getElementById('evTargetMember').value = '';
+        document.getElementById('evLocation').value = '';
+        document.getElementById('evAmount').value = '';
+        document.getElementById('evMemo').value = '';
+      }
+      updateEvCatSelector();
+      setEvCategory(evCategory);
+
+      m.classList.remove('hidden');
+      void m.offsetWidth;
+      sheet.classList.add('modal-open');
+      lucide.createIcons();
+    }
+
+    function closeEventModal() {
+      const m = document.getElementById('eventModal');
+      const sheet = m.querySelector('.modal-sheet');
+      sheet.classList.remove('modal-open');
+      setTimeout(() => m.classList.add('hidden'), 300);
+      editEventIdx = -1;
+    }
+
+    function saveEvent() {
+      const title = document.getElementById('evTitle').value.trim();
+      if (!title) { alert('제목/사유를 입력하세요.'); return; }
+      const amount = parseFmt(document.getElementById('evAmount').value) || 0;
+      if (amount <= 0) { alert('금액을 입력하세요.'); return; }
+      const date = document.getElementById('evDate').value;
+      if (!date) { alert('날짜를 선택하세요.'); return; }
+
+      const participants = [];
+      if (evCategory === 'smallGathering' || evCategory === 'annualEvent') {
+        document.querySelectorAll('.ev-participant-cb:checked').forEach(cb => participants.push(cb.value));
+      }
+
+      const data = {
+        category: evCategory,
+        date,
+        title,
+        location: document.getElementById('evLocation').value.trim(),
+        targetMember: evCategory === 'condolence' ? document.getElementById('evTargetMember').value : '',
+        participants,
+        amount,
+        memo: document.getElementById('evMemo').value.trim(),
+      };
+
+      if (editEventIdx >= 0) {
+        // Update existing event
+        const ev = events[editEventIdx];
+        Object.assign(ev, data);
+        // Update linked transaction
+        if (ev.txId) {
+          const tx = transactions.find(t => t.id === ev.txId);
+          if (tx) {
+            tx.date = data.date;
+            tx.amount = data.amount;
+            tx.description = data.title;
+            tx.category = data.category;
+            saveTx();
+          }
+        }
+        saveEvents();
+      } else {
+        // Create new event
+        data.id = 'ev_' + Date.now();
+        data.createdAt = new Date().toISOString();
+        // Auto-create linked transaction
+        const tx = {
+          id: 't_' + Date.now(),
+          type: 'expense',
+          date: data.date,
+          amount: data.amount,
+          description: data.title,
+          category: data.category,
+          eventId: data.id,
+          createdAt: new Date().toISOString()
+        };
+        data.txId = tx.id;
+        transactions.push(tx);
+        saveTx();
+        events.push(data);
+        saveEvents();
+      }
+
+      closeEventModal();
+      renderSupport();
+      showToast(editEventIdx >= 0 ? '지원 내역이 수정되었습니다' : '지원 내역이 등록되었습니다');
+    }
+
+    function deleteEvent(idx) {
+      const evIdx = typeof idx === 'number' ? idx : editEventIdx;
+      if (evIdx < 0) return;
+      const ev = events[evIdx];
+      if (!confirm((ev.title || '이 내역') + '을(를) 삭제하시겠습니까?\n연결된 거래내역도 함께 삭제됩니다.')) return;
+      // Delete linked transaction
+      if (ev.txId) {
+        const ti = transactions.findIndex(t => t.id === ev.txId);
+        if (ti >= 0) transactions.splice(ti, 1);
+        saveTx();
+      }
+      events.splice(evIdx, 1);
+      saveEvents();
+      if (editEventIdx >= 0) closeEventModal();
+      renderSupport();
+      showToast('지원 내역이 삭제되었습니다');
+    }
+
+    // ===== UTILITIES =====
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      document.getElementById('toastMsg').textContent = msg;
+      t.classList.remove('translate-y-20', 'opacity-0');
+      setTimeout(() => t.classList.add('translate-y-20', 'opacity-0'), 2500);
+    }
+
+    // ===== FADE IN OBSERVER =====
+    function initFadeIn() {
+      const obs = new IntersectionObserver(entries => {
+        entries.forEach(e => {
+          if (e.isIntersecting) {
+            e.target.classList.add('visible');
+            // Remove inline styles to let CSS animation take over
+            e.target.style.opacity = '';
+            e.target.style.transform = '';
+            obs.unobserve(e.target);
+          }
+        });
+      }, { threshold: 0.08 });
+      document.querySelectorAll('.fi').forEach(el => {
+        // Apply initial hidden state via JS
+        el.style.opacity = '0';
+        el.style.transform = 'translateY(12px)';
+        obs.observe(el);
+      });
+    }
+
+    // Bylaws Revision History Data
+    const revisionHistory = [
+      {
+        date: '2026-02-06',
+        version: '1.0',
+        editor: 'IPSL Alumni',
+        summary: '회칙 최초 제정',
+        details: [
+          '제1조 임원진 구성 및 임기 규정',
+          '제2조 회비 (월 1만원) 및 운영 원칙 확립',
+          '제3조~7조 경조사/소모임/행사/예비비 규정 신설',
+          '제8조 내역 공개 및 투명성 보장 조항',
+          '제9조 개정 절차 수립'
+        ]
+      }
+    ];
+
+    // ===== INIT =====
+    document.addEventListener('DOMContentLoaded', () => {
+      initDarkMode();
+      updateHeroStats();
+      initBudgetYear();
+      updateDynamicAmounts();
+      initFadeIn();
+      initCohorts();
+      renderRevisions();
+      lucide.createIcons();
+    });
+
+    function renderRevisions() {
+      const list = document.getElementById('revisionList');
+      if (!list) return;
+      list.innerHTML = revisionHistory.map((rev, i) => `
+        <div class="relative pl-6 pb-2 border-l-2 border-zinc-100 dark:border-zinc-700 last:border-0 last:pb-0">
+          <div class="absolute -left-[5px] top-1.5 w-2.5 h-2.5 rounded-full bg-navy-500 border-2 border-white dark:border-zinc-800"></div>
+          <div class="flex items-center gap-2 mb-1">
+            <span class="text-sm font-bold text-zinc-800 dark:text-zinc-200">${rev.date}</span>
+            <span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-zinc-100 dark:bg-zinc-700 text-zinc-500 dark:text-zinc-400">v${rev.version}</span>
+            <span class="text-xs text-zinc-500">by ${rev.editor}</span>
+          </div>
+          <p class="text-sm font-semibold text-zinc-700 dark:text-zinc-300 mb-2">${rev.summary}</p>
+          <ul class="space-y-1">
+            ${rev.details.map(d => `<li class="text-xs text-zinc-500 dark:text-zinc-400 flex items-start gap-1.5 leading-relaxed">
+              <span class="w-1 h-1 rounded-full bg-zinc-300 dark:bg-zinc-600 mt-1.5 shrink-0"></span>${d}
+            </li>`).join('')}
+          </ul>
+        </div>
+      `).join('');
+    }
+
+    function initCohorts() {
+      const el = document.getElementById('mCohort');
+      if (!el) return;
+      el.innerHTML = '';
+      const startYear = 2009;
+      const currentYear = new Date().getFullYear();
+      // Generate until current year + 1
+      const endYear = currentYear + 1;
+      // Reverse order (latest first)
+      for (let y = endYear; y >= startYear; y--) {
+        const gen = y - 2008; // 2009 is 1st
+        const opt = document.createElement('option');
+        opt.value = `${gen}기 (${y}년)`;
+        opt.textContent = `${gen}기 (${y}년)`;
+        el.appendChild(opt);
+      }
+    }
+
+    function fmtPhone(el) {
+      let v = el.value.replace(/[^0-9]/g, '');
+      if (v.length > 3 && v.length <= 7) {
+        v = v.replace(/(\d{3})(\d{1,4})/, '$1-$2');
+      } else if (v.length > 7) {
+        // Handle 02 vs 010
+        if (v.startsWith('02')) {
+          v = v.replace(/(\d{2})(\d{3,4})(\d{4})/, '$1-$2-$3');
+        } else {
+          v = v.replace(/(\d{3})(\d{3,4})(\d{4})/, '$1-$2-$3');
+        }
+      }
+      el.value = v;
+    }
+
+
+
+    function fmtInput(el) {
+      const v = el.value.replace(/[^0-9]/g, '');
+      el.value = v ? Number(v).toLocaleString() : '';
+    }
+    function parseFmt(v) { return parseInt(v.replace(/,/g, '')) || 0; }
+
+    // ===== DATA MANAGEMENT =====
+    function exportToJSON() {
+      const data = {
+        settings,
+        members,
+        fees,
+        transactions,
+        events,
+        exportDate: new Date().toISOString()
+      };
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `IPSL_Backup_${new Date().toISOString().slice(0, 10)}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      showToast('JSON 백업 파일이 생성되었습니다');
+    }
+
+    function exportAllToExcel() {
+      const wb = XLSX.utils.book_new();
+
+      // 1. Members
+      const mData = members.map(m => ({
+        이름: m.name, 기수: m.cohort, 직책: m.role, 연락처: m.phone, 이메일: m.email, 메모: m.memo
+      }));
+      XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(mData), '회원명부');
+
+      // 2. Fees (Current Year)
+      const year = document.getElementById('feeYear')?.value || new Date().getFullYear();
+      const fData = members.map(m => {
+        const row = { 이름: m.name };
+        let t = 0;
+        MONTHS.forEach((mn, i) => {
+          const v = fees[year]?.[m.id]?.[i] || 0;
+          row[mn] = v; t += v;
+        });
+        row['합계'] = t;
+        return row;
+      });
+      XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(fData), year + '년 회비');
+
+      // 3. Transactions
+      const tData = transactions.map(t => ({
+        날짜: t.date, 구분: t.type === 'deposit' ? '입금' : '사용', 카테고리: t.category || '-',
+        내용: t.description, 금액: t.amount
+      }));
+      XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(tData), '입출금내역');
+
+      // 4. Events
+      const eData = events.map(e => ({
+        날짜: e.date, 카테고리: SUPPORT_CATS[e.category]?.label || e.category,
+        제목: e.title, 대상: e.targetMember ? members.find(m => m.id === e.targetMember)?.name : '',
+        장소: e.location, 금액: e.amount, 메모: e.memo
+      }));
+      XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(eData), '지원내역');
+
+      XLSX.writeFile(wb, `IPSL_Full_Backup_${new Date().toISOString().slice(0, 10)}.xlsx`);
+      showToast('통합 엑셀 파일이 생성되었습니다');
+    }
+
+    function importData(file) {
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = e => {
+        try {
+          const data = JSON.parse(e.target.result);
+          if (data.settings) { settings = data.settings; saveSettingsData(); }
+          if (data.members) { members = data.members; saveMembers(); }
+          if (data.fees) { fees = data.fees; saveFees(); }
+          if (data.transactions) { transactions = data.transactions; saveTx(); }
+          if (data.events) { events = data.events; saveEvents(); }
+
+          alert('데이터가 성공적으로 복원되었습니다.');
+          location.reload();
+        } catch (err) {
+          alert('파일 형식 오류: ' + err.message);
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    function clearAllData() {
+      if (!confirm('정말로 모든 데이터를 삭제하시겠습니까?\n이 작업은 되돌릴 수 없습니다.')) return;
+      if (!confirm('확실합니까? 모든 회원, 회비, 내역 정보가 사라집니다.')) return;
+
+      localStorage.removeItem(SETTINGS_KEY);
+      localStorage.removeItem(MEMBERS_KEY);
+      localStorage.removeItem(FEES_KEY);
+      localStorage.removeItem(TX_KEY);
+      localStorage.removeItem(EVENTS_KEY);
+
+      alert('모든 데이터가 초기화되었습니다.');
+      location.reload();
+    }
+  </script>
+</body>
+
+</html>
