@@ -8,6 +8,20 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- Firebase SDK (v9 compat) -->
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+  <script>
+    firebase.initializeApp({
+      apiKey: "AIzaSyAq9phKxBeC_VI11hM1BLFVBW55cnWsc8A",
+      authDomain: "ipsl-v1.firebaseapp.com",
+      projectId: "ipsl-v1",
+      storageBucket: "ipsl-v1.firebasestorage.app",
+      messagingSenderId: "440542648742",
+      appId: "1:440542648742:web:798dc85b7cce5220411767"
+    });
+    const db = firebase.firestore();
+  </script>
   <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css" rel="stylesheet">
   <script>
     tailwind.config = {
@@ -1579,7 +1593,7 @@
       teachersDay: 300000
     };
     let settings = Object.assign({}, DEFAULT_SETTINGS, JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}'));
-    function saveSettingsData() { localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings)); }
+    function saveSettingsData() { localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings)); FirestoreSync.saveSettings(); }
 
     function openSettingsModal() {
       const m = document.getElementById('settingsModal');
@@ -1828,10 +1842,132 @@
       teachersDay: { label: '스승의날', icon: 'graduation-cap', color: 'navy' },
     };
 
-    function saveMembers() { localStorage.setItem(MEMBERS_KEY, JSON.stringify(members)); updateHeroStats(); }
-    function saveFees() { localStorage.setItem(FEES_KEY, JSON.stringify(fees)); updateHeroStats(); }
-    function saveTx() { localStorage.setItem(TX_KEY, JSON.stringify(transactions)); updateHeroStats(); }
-    function saveEvents() { localStorage.setItem(EVENTS_KEY, JSON.stringify(events)); }
+    // ===== FIRESTORE SYNC LAYER =====
+    const FirestoreSync = {
+      // --- LOAD (Firestore → memory + localStorage fallback) ---
+      async loadSettings() {
+        try {
+          const doc = await db.collection('settings').doc('config').get();
+          if (doc.exists) {
+            settings = Object.assign({}, DEFAULT_SETTINGS, doc.data());
+            localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+          }
+        } catch (e) { console.warn('Firestore loadSettings failed:', e); }
+        return settings;
+      },
+      async loadMembers() {
+        try {
+          const snap = await db.collection('members').get();
+          if (!snap.empty) {
+            members = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+            localStorage.setItem(MEMBERS_KEY, JSON.stringify(members));
+          }
+        } catch (e) { console.warn('Firestore loadMembers failed:', e); }
+        return members;
+      },
+      async loadFees() {
+        try {
+          const snap = await db.collection('fees').get();
+          if (!snap.empty) {
+            fees = {};
+            snap.docs.forEach(d => { fees[d.id] = d.data(); });
+            localStorage.setItem(FEES_KEY, JSON.stringify(fees));
+          }
+        } catch (e) { console.warn('Firestore loadFees failed:', e); }
+        return fees;
+      },
+      async loadTransactions() {
+        try {
+          const snap = await db.collection('transactions').get();
+          if (!snap.empty) {
+            transactions = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+            localStorage.setItem(TX_KEY, JSON.stringify(transactions));
+          }
+        } catch (e) { console.warn('Firestore loadTransactions failed:', e); }
+        return transactions;
+      },
+      async loadEvents() {
+        try {
+          const snap = await db.collection('events').get();
+          if (!snap.empty) {
+            events = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+            localStorage.setItem(EVENTS_KEY, JSON.stringify(events));
+          }
+        } catch (e) { console.warn('Firestore loadEvents failed:', e); }
+        return events;
+      },
+      async loadAll() {
+        await Promise.allSettled([
+          this.loadSettings(), this.loadMembers(), this.loadFees(),
+          this.loadTransactions(), this.loadEvents()
+        ]);
+      },
+
+      // --- SAVE (fire-and-forget to Firestore) ---
+      saveSettings() {
+        db.collection('settings').doc('config').set(JSON.parse(JSON.stringify(settings)))
+          .catch(e => console.warn('Firestore saveSettings failed:', e));
+      },
+      saveMembers() {
+        const batch = db.batch();
+        members.forEach(m => {
+          const { id, ...data } = m;
+          batch.set(db.collection('members').doc(id), data);
+        });
+        batch.commit().catch(e => console.warn('Firestore saveMembers failed:', e));
+      },
+      saveFees() {
+        const batch = db.batch();
+        Object.keys(fees).forEach(year => {
+          batch.set(db.collection('fees').doc(year), fees[year]);
+        });
+        batch.commit().catch(e => console.warn('Firestore saveFees failed:', e));
+      },
+      saveTransactions() {
+        const batch = db.batch();
+        transactions.forEach(t => {
+          const { id, ...data } = t;
+          batch.set(db.collection('transactions').doc(id), data);
+        });
+        batch.commit().catch(e => console.warn('Firestore saveTransactions failed:', e));
+      },
+      saveEvents() {
+        const batch = db.batch();
+        events.forEach(ev => {
+          const { id, ...data } = ev;
+          batch.set(db.collection('events').doc(id), data);
+        });
+        batch.commit().catch(e => console.warn('Firestore saveEvents failed:', e));
+      },
+
+      // --- DELETE ---
+      deleteMember(memberId) {
+        db.collection('members').doc(memberId).delete()
+          .catch(e => console.warn('Firestore deleteMember failed:', e));
+      },
+      deleteTransaction(txId) {
+        db.collection('transactions').doc(txId).delete()
+          .catch(e => console.warn('Firestore deleteTransaction failed:', e));
+      },
+      deleteEvent(eventId) {
+        db.collection('events').doc(eventId).delete()
+          .catch(e => console.warn('Firestore deleteEvent failed:', e));
+      },
+      clearAll() {
+        ['settings', 'members', 'fees', 'transactions', 'events'].forEach(col => {
+          db.collection(col).get().then(snap => {
+            const batch = db.batch();
+            snap.docs.forEach(d => batch.delete(d.ref));
+            return batch.commit();
+          }).catch(e => console.warn('Firestore clearAll failed for', col, e));
+        });
+      }
+    };
+
+    function saveMembers() { localStorage.setItem(MEMBERS_KEY, JSON.stringify(members)); FirestoreSync.saveMembers(); updateHeroStats(); }
+    function saveFees() { localStorage.setItem(FEES_KEY, JSON.stringify(fees)); FirestoreSync.saveFees(); updateHeroStats(); }
+    function saveTx() { localStorage.setItem(TX_KEY, JSON.stringify(transactions)); FirestoreSync.saveTransactions(); updateHeroStats(); }
+    function saveEvents() { localStorage.setItem(EVENTS_KEY, JSON.stringify(events)); FirestoreSync.saveEvents(); }
 
     function updateHeroStats() {
       const year = new Date().getFullYear();
@@ -1890,7 +2026,7 @@
           });
         });
       });
-      if (changed) localStorage.setItem(FEES_KEY, JSON.stringify(fees));
+      if (changed) saveFees();
     })();
 
     // Migrate transactions: add category and eventId if missing
@@ -1974,6 +2110,7 @@
       Object.keys(fees).forEach(year => {
         if (fees[year][mid]) delete fees[year][mid];
       });
+      FirestoreSync.deleteMember(mid);
       saveMembers(); saveFees();
       renderMembers();
       showToast('회원이 삭제되었습니다');
@@ -2334,9 +2471,10 @@
       if (!confirm('이 내역을 삭제하시겠습니까?' + (hasEvent ? '\n연결된 지원 내역도 함께 삭제됩니다.' : ''))) return;
       if (hasEvent) {
         const ei = events.findIndex(e => e.id === tx.eventId);
-        if (ei >= 0) events.splice(ei, 1);
+        if (ei >= 0) { FirestoreSync.deleteEvent(events[ei].id); events.splice(ei, 1); }
         saveEvents();
       }
+      FirestoreSync.deleteTransaction(tx.id);
       transactions.splice(idx, 1);
       saveTx();
       renderStatements();
@@ -2810,9 +2948,10 @@
       // Delete linked transaction
       if (ev.txId) {
         const ti = transactions.findIndex(t => t.id === ev.txId);
-        if (ti >= 0) transactions.splice(ti, 1);
+        if (ti >= 0) { FirestoreSync.deleteTransaction(transactions[ti].id); transactions.splice(ti, 1); }
         saveTx();
       }
+      FirestoreSync.deleteEvent(ev.id);
       events.splice(evIdx, 1);
       saveEvents();
       if (editEventIdx >= 0) closeEventModal();
@@ -2876,6 +3015,28 @@
       initCohorts();
       renderRevisions();
       lucide.createIcons();
+
+      // Firestore 백그라운드 동기화
+      FirestoreSync.loadAll().then(async () => {
+        // Firestore가 비어있고 localStorage에 데이터가 있으면 자동 마이그레이션
+        const settingsDoc = await db.collection('settings').doc('config').get();
+        if (!settingsDoc.exists && members.length > 0) {
+          console.log('localStorage → Firestore 마이그레이션 시작');
+          FirestoreSync.saveSettings();
+          FirestoreSync.saveMembers();
+          FirestoreSync.saveFees();
+          FirestoreSync.saveTransactions();
+          FirestoreSync.saveEvents();
+          showToast('클라우드 동기화가 완료되었습니다');
+        }
+        // Firestore 데이터로 UI 갱신
+        updateHeroStats();
+        updateDynamicAmounts();
+        lucide.createIcons();
+        console.log('Firestore 동기화 완료');
+      }).catch(err => {
+        console.warn('Firestore 백그라운드 동기화 실패:', err);
+      });
     });
 
     function renderRevisions() {
@@ -3034,6 +3195,7 @@
       localStorage.removeItem(FEES_KEY);
       localStorage.removeItem(TX_KEY);
       localStorage.removeItem(EVENTS_KEY);
+      FirestoreSync.clearAll();
 
       alert('모든 데이터가 초기화되었습니다.');
       location.reload();
