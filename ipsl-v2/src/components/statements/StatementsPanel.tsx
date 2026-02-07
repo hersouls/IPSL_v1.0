@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react';
-import { Plus, ArrowDownCircle, ArrowUpCircle, Pencil, Trash2, Printer, BarChart3, Lock, Unlock, Eye, EyeOff } from 'lucide-react';
+import { Plus, ArrowDownCircle, ArrowUpCircle, Pencil, Trash2, Printer, BarChart3, Lock, Unlock, Eye, EyeOff, Link2 } from 'lucide-react';
 import { useTransactionStore } from '../../stores/transactionStore';
 import { useMemberStore } from '../../stores/memberStore';
 import { useFeeStore } from '../../stores/feeStore';
@@ -95,8 +95,11 @@ export default function StatementsPanel() {
 
   const handleDelete = (id: string) => {
     const tx = transactions.find(t => t.id === id);
-    const hasEvent = tx?.eventId;
-    if (!confirm('이 내역을 삭제하시겠습니까?' + (hasEvent ? '\n연결된 지원 내역도 함께 삭제됩니다.' : ''))) return;
+    const warnings: string[] = [];
+    if (tx?.feeRef) warnings.push('연결된 회비 납부 기록도 함께 삭제됩니다.');
+    if (tx?.eventId) warnings.push('연결된 지원 내역도 함께 삭제됩니다.');
+    const msg = '이 내역을 삭제하시겠습니까?' + (warnings.length ? '\n\n' + warnings.join('\n') : '');
+    if (!confirm(msg)) return;
     deleteTransaction(id);
     showToast('내역이 삭제되었습니다');
   };
@@ -216,6 +219,11 @@ export default function StatementsPanel() {
                       {catInfo && (
                         <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-navy-50 dark:bg-navy-950/50 text-navy-600 dark:text-navy-400">
                           {catInfo.label}
+                        </span>
+                      )}
+                      {(tx.feeRef || tx.eventId) && (
+                        <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-amber-50 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 flex items-center gap-0.5" title={tx.feeRef ? '회비 연결' : '지원 연결'}>
+                          <Link2 className="w-2.5 h-2.5" />{tx.feeRef ? '회비' : '지원'}
                         </span>
                       )}
                       <span className="text-[11px] text-zinc-400">{tx.date}</span>

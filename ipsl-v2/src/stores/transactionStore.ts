@@ -4,7 +4,15 @@ import { STORAGE_KEYS, SUPPORT_CATS } from '../constants';
 import * as sync from '../services/firestoreSync';
 import { transactionId as genTxId, eventId as genEvId } from '../utils/id';
 import { useEventStore } from './eventStore';
+import { useFeeStore } from './feeStore';
 import type { SupportCategoryKey } from '../types';
+
+function parseFeeRef(feeRef: string | null | undefined): { year: string; memberId: string; month: number } | null {
+  if (!feeRef) return null;
+  const parts = feeRef.split('_');
+  if (parts.length !== 4 || parts[0] !== 'fee') return null;
+  return { year: parts[1], memberId: parts[2], month: Number(parts[3]) };
+}
 
 interface TransactionState {
   transactions: Transaction[];
@@ -72,9 +80,9 @@ export const useTransactionStore = create<TransactionState>((set, get) => ({
     const updated = { ...existing, ...data };
     const eventStore = useEventStore.getState();
 
+    // Sync linked event
     if (existing.eventId) {
       if (updated.type === 'expense' && updated.category) {
-        // Update linked event
         eventStore.updateEvent(existing.eventId, {
           date: updated.date,
           amount: updated.amount,
@@ -82,12 +90,10 @@ export const useTransactionStore = create<TransactionState>((set, get) => ({
           category: updated.category,
         });
       } else {
-        // Changed to deposit or no category — remove linked event
         eventStore.deleteEvent(existing.eventId);
         updated.eventId = null;
       }
     } else if (updated.type === 'expense' && updated.category) {
-      // No linked event yet — create one
       const catLabel = SUPPORT_CATS[updated.category as SupportCategoryKey]?.label || '';
       const ev = eventStore.addEvent({
         category: updated.category,
@@ -103,6 +109,12 @@ export const useTransactionStore = create<TransactionState>((set, get) => ({
       updated.eventId = ev.id;
     }
 
+    // Sync linked fee record
+    const feeInfo = parseFeeRef(updated.feeRef);
+    if (feeInfo) {
+      useFeeStore.getState().setFee(feeInfo.year, feeInfo.memberId, feeInfo.month, updated.amount);
+    }
+
     const next = get().transactions.map(t => t.id === id ? updated : t);
     set({ transactions: next });
     persist(next);
@@ -112,6 +124,11 @@ export const useTransactionStore = create<TransactionState>((set, get) => ({
     const tx = get().transactions.find(t => t.id === id);
     if (tx?.eventId) {
       useEventStore.getState().deleteEvent(tx.eventId);
+    }
+    // Clean up linked fee record
+    const feeInfo = parseFeeRef(tx?.feeRef);
+    if (feeInfo) {
+      useFeeStore.getState().deleteFee(feeInfo.year, feeInfo.memberId, feeInfo.month);
     }
     sync.deleteTransactionDoc(id);
     const next = get().transactions.filter(t => t.id !== id);

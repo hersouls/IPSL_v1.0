@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react';
 import Modal from '../ui/Modal';
 import { useTransactionStore } from '../../stores/transactionStore';
+import { useMemberStore } from '../../stores/memberStore';
 import { useUiStore } from '../../stores/uiStore';
-import { SUPPORT_CATS } from '../../constants';
+import { SUPPORT_CATS, MONTHS } from '../../constants';
 import { fmtInputValue, parseFmt } from '../../utils/format';
 import type { SupportCategoryKey } from '../../types';
-import { Heart, UsersRound, CalendarHeart, GraduationCap } from 'lucide-react';
+import { Heart, UsersRound, CalendarHeart, GraduationCap, Link2 } from 'lucide-react';
 
 const CAT_ICONS: Record<string, React.ReactNode> = {
   heart: <Heart className="w-3 h-3" />,
@@ -21,8 +22,22 @@ export default function TransactionModal() {
   const updateTransaction = useTransactionStore(s => s.updateTransaction);
   const deleteTransaction = useTransactionStore(s => s.deleteTransaction);
 
+  const members = useMemberStore(s => s.members);
+
   const existing = editTxId ? transactions.find(t => t.id === editTxId) : null;
   const isEdit = !!existing;
+
+  // Linked info
+  const hasFeeRef = !!existing?.feeRef;
+  const hasEventId = !!existing?.eventId;
+  const feeRefLabel = (() => {
+    if (!existing?.feeRef) return '';
+    const parts = existing.feeRef.split('_');
+    if (parts.length !== 4) return '';
+    const memberName = members.find(m => m.id === parts[2])?.name || '알수없음';
+    const month = MONTHS[Number(parts[3])] || '';
+    return `${memberName} ${parts[1]}년 ${month} 회비`;
+  })();
 
   const [type, setType] = useState<'deposit' | 'expense'>('deposit');
   const [date, setDate] = useState('');
@@ -75,9 +90,11 @@ export default function TransactionModal() {
 
   const handleDelete = () => {
     if (!editTxId) return;
-    const tx = transactions.find(t => t.id === editTxId);
-    const hasEvent = tx?.eventId;
-    if (!confirm('이 내역을 삭제하시겠습니까?' + (hasEvent ? '\n연결된 지원 내역도 함께 삭제됩니다.' : ''))) return;
+    const warnings: string[] = [];
+    if (hasFeeRef) warnings.push('연결된 회비 납부 기록도 함께 삭제됩니다.');
+    if (hasEventId) warnings.push('연결된 지원 내역도 함께 삭제됩니다.');
+    const msg = '이 내역을 삭제하시겠습니까?' + (warnings.length ? '\n\n' + warnings.join('\n') : '');
+    if (!confirm(msg)) return;
     deleteTransaction(editTxId);
     closeTxModal();
     showToast('내역이 삭제되었습니다');
@@ -88,6 +105,24 @@ export default function TransactionModal() {
   return (
     <Modal open={txModalOpen} onClose={closeTxModal} title={isEdit ? '내역 수정' : '입출금 등록'}>
       <div className="space-y-4">
+        {/* Linked info badges */}
+        {isEdit && (hasFeeRef || hasEventId) && (
+          <div className="space-y-1.5">
+            {hasFeeRef && (
+              <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800">
+                <Link2 className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 flex-shrink-0" />
+                <span className="text-[11px] font-semibold text-amber-700 dark:text-amber-400">회비 연결: {feeRefLabel}</span>
+              </div>
+            )}
+            {hasEventId && (
+              <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800">
+                <Link2 className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400 flex-shrink-0" />
+                <span className="text-[11px] font-semibold text-blue-700 dark:text-blue-400">지원 내역 연결됨</span>
+              </div>
+            )}
+          </div>
+        )}
+
         {/* Type toggle */}
         <div className="grid grid-cols-2 gap-2">
           <button
