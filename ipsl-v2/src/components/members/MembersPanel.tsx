@@ -113,9 +113,9 @@ export default function MembersPanel() {
                 </div>
                 {m.company && <p className="text-xs text-zinc-500 flex items-center gap-1.5 mb-1"><Building2 className="w-3 h-3" />{m.company}</p>}
                 {m.birthday && <p className="text-xs text-zinc-500 flex items-center gap-1.5 mb-1"><Cake className="w-3 h-3" />{m.birthday}</p>}
-                {m.phone && <p className="text-xs text-zinc-500 flex items-center gap-1.5 mb-1"><Phone className="w-3 h-3" />{m.phone}</p>}
-                {m.email && <p className="text-xs text-zinc-500 flex items-center gap-1.5 mb-1"><Mail className="w-3 h-3" />{m.email}</p>}
-                {m.emailCompany && <p className="text-xs text-zinc-500 flex items-center gap-1.5 mb-1"><Briefcase className="w-3 h-3" />{m.emailCompany}</p>}
+                {m.phone && <p className="text-xs text-zinc-500 flex items-center gap-1.5 mb-1"><Phone className="w-3 h-3" /><a href={`tel:${m.phone.replace(/-/g, '')}`} className="hover:text-navy-600 dark:hover:text-navy-400 hover:underline">{m.phone}</a></p>}
+                {m.email && <p className="text-xs text-zinc-500 flex items-center gap-1.5 mb-1"><Mail className="w-3 h-3" /><a href={`mailto:${m.email}`} className="hover:text-navy-600 dark:hover:text-navy-400 hover:underline">{m.email}</a></p>}
+                {m.emailCompany && <p className="text-xs text-zinc-500 flex items-center gap-1.5 mb-1"><Briefcase className="w-3 h-3" /><a href={`mailto:${m.emailCompany}`} className="hover:text-navy-600 dark:hover:text-navy-400 hover:underline">{m.emailCompany}</a></p>}
                 <div className="flex gap-2 mt-3 pt-3 border-t border-zinc-100 dark:border-zinc-700">
                   <button onClick={() => requestPin('edit', m.id, m.name)} className="flex-1 py-1.5 text-xs font-semibold rounded-lg bg-zinc-50 dark:bg-zinc-700/50 hover:bg-zinc-100 dark:hover:bg-zinc-700 transition-colors flex items-center justify-center gap-1"><Pencil className="w-3 h-3" />수정</button>
                   <button onClick={() => requestPin('delete', m.id, m.name)} className="flex-1 py-1.5 text-xs font-semibold rounded-lg text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors flex items-center justify-center gap-1"><Trash2 className="w-3 h-3" />삭제</button>
