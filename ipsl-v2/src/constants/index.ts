@@ -28,6 +28,7 @@ export const STORAGE_KEYS = {
   settingsPin: 'ipsl_settingsPin',
   schedules: 'ipsl_schedules',
   votingSessions: 'ipsl_votingSessions',
+  announcements: 'ipsl_announcements',
 } as const;
 
 export const DEFAULT_SETTINGS_PIN = '9876';

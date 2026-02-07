@@ -7,6 +7,8 @@ import TabNav from './components/layout/TabNav';
 import Footer from './components/layout/Footer';
 import Toast from './components/layout/Toast';
 
+import AnnouncementsPanel from './components/announcements/AnnouncementsPanel';
+import AnnouncementModal from './components/announcements/AnnouncementModal';
 import BylawsPanel from './components/bylaws/BylawsPanel';
 import MembersPanel from './components/members/MembersPanel';
 import MemberModal from './components/members/MemberModal';
@@ -34,6 +36,7 @@ export default function App() {
       <Header />
       <TabNav />
 
+      {currentTab === 'announcements' && <AnnouncementsPanel />}
       {currentTab === 'bylaws' && <BylawsPanel />}
       {currentTab === 'members' && <MembersPanel />}
       {currentTab === 'fees' && <FeesPanel />}
@@ -45,6 +48,7 @@ export default function App() {
       <Footer />
 
       {/* Modals */}
+      <AnnouncementModal />
       <MemberModal />
       <FeeModal />
       <TransactionModal />

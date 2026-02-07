@@ -53,7 +53,16 @@ export interface Settings {
   teachersDay: number;
 }
 
-export type TabId = 'bylaws' | 'members' | 'fees' | 'support' | 'statements' | 'calendar' | 'voting';
+export type TabId = 'announcements' | 'bylaws' | 'members' | 'fees' | 'support' | 'statements' | 'calendar' | 'voting';
+
+export interface Announcement {
+  id: string;
+  title: string;
+  content: string;
+  author: string;
+  pinned: boolean;
+  createdAt: string;
+}
 
 export type SupportCategoryKey = 'condolence' | 'smallGathering' | 'annualEvent' | 'teachersDay';
 

@@ -52,6 +52,11 @@ interface UiState {
   openVoteAuthModal: (sessionId: string) => void;
   closeVoteAuthModal: () => void;
 
+  announcementModalOpen: boolean;
+  editAnnouncementId: string | null;
+  openAnnouncementModal: (id?: string | null) => void;
+  closeAnnouncementModal: () => void;
+
   // Calendar
   calYear: number;
   calMonth: number;
@@ -80,7 +85,7 @@ function loadDarkMode(): boolean {
 
 export const useUiStore = create<UiState>((set, get) => ({
   // Tab
-  currentTab: 'bylaws',
+  currentTab: 'announcements',
   switchTab: (tab) => set({ currentTab: tab }),
 
   // Member modal
@@ -139,6 +144,12 @@ export const useUiStore = create<UiState>((set, get) => ({
   voteAuthSessionId: null,
   openVoteAuthModal: (sessionId) => set({ voteAuthModalOpen: true, voteAuthSessionId: sessionId }),
   closeVoteAuthModal: () => set({ voteAuthModalOpen: false, voteAuthSessionId: null }),
+
+  // Announcement modal
+  announcementModalOpen: false,
+  editAnnouncementId: null,
+  openAnnouncementModal: (id = null) => set({ announcementModalOpen: true, editAnnouncementId: id ?? null }),
+  closeAnnouncementModal: () => set({ announcementModalOpen: false, editAnnouncementId: null }),
 
   // Calendar
   calYear: new Date().getFullYear(),

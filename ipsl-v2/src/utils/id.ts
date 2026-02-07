@@ -17,3 +17,7 @@ export function scheduleId(): string {
 export function votingSessionId(): string {
   return 'vs_' + (Date.now() + 3);
 }
+
+export function announcementId(): string {
+  return 'an_' + (Date.now() + 4);
+}

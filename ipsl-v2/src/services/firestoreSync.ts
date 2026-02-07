@@ -3,7 +3,7 @@ import {
   writeBatch, deleteDoc,
 } from 'firebase/firestore';
 import { db } from './firebase';
-import type { Member, Transaction, Event, Fees, Settings, Schedule, VotingSession } from '../types';
+import type { Member, Transaction, Event, Fees, Settings, Schedule, VotingSession, Announcement } from '../types';
 import { DEFAULT_SETTINGS } from '../constants';
 
 // ── LOAD ──────────────────────────────────────────
@@ -94,9 +94,21 @@ export async function loadVotingSessions(): Promise<VotingSession[]> {
   return [];
 }
 
+export async function loadAnnouncements(): Promise<Announcement[]> {
+  try {
+    const snap = await getDocs(collection(db, 'announcements'));
+    if (!snap.empty) {
+      return snap.docs.map(d => ({ id: d.id, ...d.data() } as Announcement));
+    }
+  } catch (e) {
+    console.warn('Firestore loadAnnouncements failed:', e);
+  }
+  return [];
+}
+
 export async function loadAll() {
-  const [settings, members, fees, transactions, events, schedules, votingSessions] = await Promise.allSettled([
-    loadSettings(), loadMembers(), loadFees(), loadTransactions(), loadEvents(), loadSchedules(), loadVotingSessions(),
+  const [settings, members, fees, transactions, events, schedules, votingSessions, announcements] = await Promise.allSettled([
+    loadSettings(), loadMembers(), loadFees(), loadTransactions(), loadEvents(), loadSchedules(), loadVotingSessions(), loadAnnouncements(),
   ]);
   return {
     settings: settings.status === 'fulfilled' ? settings.value : { ...DEFAULT_SETTINGS },
@@ -106,6 +118,7 @@ export async function loadAll() {
     events: events.status === 'fulfilled' ? events.value : [],
     schedules: schedules.status === 'fulfilled' ? schedules.value : [],
     votingSessions: votingSessions.status === 'fulfilled' ? votingSessions.value : [],
+    announcements: announcements.status === 'fulfilled' ? announcements.value : [],
   };
 }
 
@@ -198,8 +211,22 @@ export function deleteVotingSessionDoc(sessionId: string) {
     .catch(e => console.warn('Firestore deleteVotingSession failed:', e));
 }
 
+export function saveAnnouncements(announcements: Announcement[]) {
+  const batch = writeBatch(db);
+  announcements.forEach(a => {
+    const { id, ...data } = a;
+    batch.set(doc(db, 'announcements', id), data);
+  });
+  batch.commit().catch(e => console.warn('Firestore saveAnnouncements failed:', e));
+}
+
+export function deleteAnnouncementDoc(announcementId: string) {
+  deleteDoc(doc(db, 'announcements', announcementId))
+    .catch(e => console.warn('Firestore deleteAnnouncement failed:', e));
+}
+
 export async function clearAll() {
-  const collections = ['settings', 'members', 'fees', 'transactions', 'events', 'schedules', 'votingSessions'];
+  const collections = ['settings', 'members', 'fees', 'transactions', 'events', 'schedules', 'votingSessions', 'announcements'];
   for (const col of collections) {
     try {
       const snap = await getDocs(collection(db, col));

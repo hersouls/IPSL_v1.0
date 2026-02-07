@@ -9,6 +9,7 @@ import { useTransactionStore } from '../stores/transactionStore';
 import { useEventStore } from '../stores/eventStore';
 import { useScheduleStore } from '../stores/scheduleStore';
 import { useVotingStore } from '../stores/votingStore';
+import { useAnnouncementStore } from '../stores/announcementStore';
 import { useUiStore } from '../stores/uiStore';
 import { DEFAULT_MEMBER_PIN } from '../constants';
 
@@ -31,7 +32,8 @@ export function useFirestoreSync() {
           data.transactions.length > 0 ||
           data.events.length > 0 ||
           data.schedules.length > 0 ||
-          data.votingSessions.length > 0;
+          data.votingSessions.length > 0 ||
+          data.announcements.length > 0;
 
         if (hasFirestoreData) {
           useSettingsStore.getState().setSettings(data.settings);
@@ -41,6 +43,7 @@ export function useFirestoreSync() {
           useEventStore.getState().setEvents(data.events);
           useScheduleStore.getState().setSchedules(data.schedules);
           useVotingStore.getState().setSessions(data.votingSessions);
+          useAnnouncementStore.getState().setAnnouncements(data.announcements);
         } else {
           // Auto-migrate localStorage → Firestore if Firestore is empty
           const settingsDoc = await getDoc(doc(db, 'settings', 'config'));
@@ -54,6 +57,7 @@ export function useFirestoreSync() {
             firestoreSync.saveEvents(useEventStore.getState().events);
             firestoreSync.saveSchedules(useScheduleStore.getState().schedules);
             firestoreSync.saveVotingSessions(useVotingStore.getState().sessions);
+            firestoreSync.saveAnnouncements(useAnnouncementStore.getState().announcements);
             showToast('클라우드 동기화가 완료되었습니다');
           }
         }

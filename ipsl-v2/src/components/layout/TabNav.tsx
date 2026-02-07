@@ -1,11 +1,12 @@
 import {
-  ScrollText, Users, Wallet, HandHeart, FileBarChart, CalendarDays, Vote, Settings, Sun, Moon,
+  Megaphone, ScrollText, Users, Wallet, HandHeart, FileBarChart, CalendarDays, Vote, Settings, Sun, Moon,
 } from 'lucide-react';
 import { useUiStore } from '../../stores/uiStore';
 import type { TabId } from '../../types';
 import clsx from 'clsx';
 
 const tabs: { id: TabId; label: string; icon: React.ReactNode }[] = [
+  { id: 'announcements', label: '공지사항', icon: <Megaphone className="w-3.5 h-3.5" /> },
   { id: 'bylaws', label: '회칙', icon: <ScrollText className="w-3.5 h-3.5" /> },
   { id: 'members', label: '회원명부', icon: <Users className="w-3.5 h-3.5" /> },
   { id: 'fees', label: '회비관리', icon: <Wallet className="w-3.5 h-3.5" /> },
