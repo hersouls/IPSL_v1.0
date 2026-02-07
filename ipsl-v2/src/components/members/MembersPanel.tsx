@@ -1,9 +1,10 @@
-import { useState } from 'react';
-import { Plus, Search, Download, Pencil, Trash2, Building2, Cake, Phone, Mail, Briefcase } from 'lucide-react';
+import { useState, useRef } from 'react';
+import { Plus, Search, Download, Pencil, Trash2, Building2, Cake, Phone, Mail, Briefcase, Lock, Eye, EyeOff } from 'lucide-react';
 import { useMemberStore } from '../../stores/memberStore';
 import { useFeeStore } from '../../stores/feeStore';
 import { useUiStore } from '../../stores/uiStore';
 import { exportMembersExcel } from '../../services/export';
+import { DEFAULT_MEMBER_PIN, MASTER_PIN } from '../../constants';
 import EmptyState from '../ui/EmptyState';
 
 export default function MembersPanel() {
@@ -14,15 +15,48 @@ export default function MembersPanel() {
   const deleteMemberFees = useFeeStore(s => s.deleteMemberFees);
   const [query, setQuery] = useState('');
 
+  // PIN auth state
+  const [pinAction, setPinAction] = useState<{ type: 'edit' | 'delete'; memberId: string; memberName: string } | null>(null);
+  const [pinInput, setPinInput] = useState('');
+  const [pinError, setPinError] = useState(false);
+  const [showPin, setShowPin] = useState(false);
+  const pinRef = useRef<HTMLInputElement>(null);
+
   const filtered = members
     .filter(m => (m.name || '').toLowerCase().includes(query.toLowerCase()) || (m.cohort || '').toLowerCase().includes(query.toLowerCase()) || (m.phone || '').includes(query))
     .sort((a, b) => (a.name || '').localeCompare(b.name || ''));
 
-  const handleDelete = (id: string, name: string) => {
-    if (!confirm(`${name}님을 삭제하시겠습니까?`)) return;
-    deleteMemberFees(id);
-    deleteMember(id);
-    showToast('회원이 삭제되었습니다');
+  const requestPin = (type: 'edit' | 'delete', memberId: string, memberName: string) => {
+    setPinAction({ type, memberId, memberName });
+    setPinInput('');
+    setPinError(false);
+    setShowPin(false);
+    setTimeout(() => pinRef.current?.focus(), 100);
+  };
+
+  const handlePinSubmit = () => {
+    if (!pinAction) return;
+    const member = members.find(m => m.id === pinAction.memberId);
+    const memberPin = member?.pin || DEFAULT_MEMBER_PIN;
+    if (pinInput !== memberPin && pinInput !== MASTER_PIN) {
+      setPinError(true);
+      setPinInput('');
+      pinRef.current?.focus();
+      return;
+    }
+
+    if (pinAction.type === 'edit') {
+      openMemberModal(pinAction.memberId);
+    } else if (pinAction.type === 'delete') {
+      if (!confirm(`${pinAction.memberName}님을 삭제하시겠습니까?`)) {
+        setPinAction(null);
+        return;
+      }
+      deleteMemberFees(pinAction.memberId);
+      deleteMember(pinAction.memberId);
+      showToast('회원이 삭제되었습니다');
+    }
+    setPinAction(null);
   };
 
   return (
@@ -83,12 +117,48 @@ export default function MembersPanel() {
                 {m.email && <p className="text-xs text-zinc-500 flex items-center gap-1.5 mb-1"><Mail className="w-3 h-3" />{m.email}</p>}
                 {m.emailCompany && <p className="text-xs text-zinc-500 flex items-center gap-1.5 mb-1"><Briefcase className="w-3 h-3" />{m.emailCompany}</p>}
                 <div className="flex gap-2 mt-3 pt-3 border-t border-zinc-100 dark:border-zinc-700">
-                  <button onClick={() => openMemberModal(m.id)} className="flex-1 py-1.5 text-xs font-semibold rounded-lg bg-zinc-50 dark:bg-zinc-700/50 hover:bg-zinc-100 dark:hover:bg-zinc-700 transition-colors flex items-center justify-center gap-1"><Pencil className="w-3 h-3" />수정</button>
-                  <button onClick={() => handleDelete(m.id, m.name)} className="flex-1 py-1.5 text-xs font-semibold rounded-lg text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors flex items-center justify-center gap-1"><Trash2 className="w-3 h-3" />삭제</button>
+                  <button onClick={() => requestPin('edit', m.id, m.name)} className="flex-1 py-1.5 text-xs font-semibold rounded-lg bg-zinc-50 dark:bg-zinc-700/50 hover:bg-zinc-100 dark:hover:bg-zinc-700 transition-colors flex items-center justify-center gap-1"><Pencil className="w-3 h-3" />수정</button>
+                  <button onClick={() => requestPin('delete', m.id, m.name)} className="flex-1 py-1.5 text-xs font-semibold rounded-lg text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors flex items-center justify-center gap-1"><Trash2 className="w-3 h-3" />삭제</button>
                 </div>
               </div>
             );
           })}
+        </div>
+      )}
+
+      {/* Member PIN dialog overlay */}
+      {pinAction && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40" onClick={() => setPinAction(null)}>
+          <div className="bg-white dark:bg-zinc-800 rounded-2xl p-6 w-72 shadow-xl" onClick={e => e.stopPropagation()}>
+            <div className="flex flex-col items-center gap-3 mb-4">
+              <div className="w-12 h-12 rounded-2xl bg-navy-50 dark:bg-navy-950/50 flex items-center justify-center">
+                <Lock className="w-6 h-6 text-navy-600 dark:text-navy-400" />
+              </div>
+              <p className="text-sm font-bold text-zinc-900 dark:text-zinc-100">{pinAction.memberName}</p>
+              <p className="text-xs text-zinc-500 dark:text-zinc-400 text-center">회원 비밀번호를 입력하세요</p>
+            </div>
+            <div className="relative mb-3">
+              <input
+                ref={pinRef}
+                type={showPin ? 'text' : 'password'}
+                value={pinInput}
+                onChange={e => { setPinInput(e.target.value.replace(/\D/g, '').slice(0, 4)); setPinError(false); }}
+                onKeyDown={e => e.key === 'Enter' && handlePinSubmit()}
+                className={`input-field text-center pr-10 tracking-widest ${pinError ? 'border-red-400 dark:border-red-500' : ''}`}
+                placeholder="0000"
+                maxLength={4}
+                inputMode="numeric"
+                autoComplete="off"
+              />
+              <button type="button" onClick={() => setShowPin(!showPin)} className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 transition-colors">
+                {showPin ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              </button>
+            </div>
+            {pinError && <p className="text-xs text-red-500 text-center mb-3">비밀번호가 올바르지 않습니다.</p>}
+            <button onClick={handlePinSubmit} className="w-full py-2.5 rounded-xl text-sm font-bold bg-navy-600 text-white hover:bg-navy-700 transition-colors">
+              확인
+            </button>
+          </div>
         </div>
       )}
     </main>
