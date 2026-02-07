@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react';
-import { Plus, Pin, Lock, Eye, EyeOff, Pencil, Trash2, ChevronDown, ChevronUp } from 'lucide-react';
+import { Plus, Pin, Lock, Eye, EyeOff, Pencil, Trash2, ChevronDown, ChevronUp, MapPin, Paperclip, Download } from 'lucide-react';
 import { useAnnouncementStore } from '../../stores/announcementStore';
 import { useUiStore } from '../../stores/uiStore';
 import { STORAGE_KEYS, DEFAULT_SETTINGS_PIN, MASTER_PIN } from '../../constants';
@@ -156,10 +156,43 @@ function AnnouncementCard({
         )}
       </button>
 
+      {/* Expanded details: location + attachments */}
+      {expanded && (
+        <div className="space-y-2 mb-2">
+          {a.location && (
+            <div className="flex items-center gap-1.5 text-[11px] text-zinc-500 dark:text-zinc-400">
+              <MapPin className="w-3 h-3 flex-shrink-0" />
+              <span>{a.location}</span>
+            </div>
+          )}
+          {a.attachments && a.attachments.length > 0 && (
+            <div className="space-y-1">
+              {a.attachments.map((att, i) => (
+                <a
+                  key={i}
+                  href={att.dataUrl}
+                  download={att.name}
+                  className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-zinc-50 dark:bg-zinc-700/50 border border-zinc-200 dark:border-zinc-600 text-xs text-navy-600 dark:text-navy-400 font-semibold hover:bg-navy-50 dark:hover:bg-navy-950/30 transition-colors"
+                >
+                  <Paperclip className="w-3 h-3 flex-shrink-0" />
+                  <span className="truncate flex-1">{att.name}</span>
+                  <Download className="w-3 h-3 flex-shrink-0" />
+                </a>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Footer */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           {a.author && <span className="text-[11px] text-zinc-400">작성자: {a.author}</span>}
+          {!expanded && a.attachments && a.attachments.length > 0 && (
+            <span className="text-[10px] text-zinc-400 flex items-center gap-0.5">
+              <Paperclip className="w-2.5 h-2.5" />{a.attachments.length}
+            </span>
+          )}
           <button
             type="button"
             onClick={() => setExpanded(!expanded)}

@@ -55,11 +55,18 @@ export interface Settings {
 
 export type TabId = 'announcements' | 'bylaws' | 'members' | 'fees' | 'support' | 'statements' | 'calendar' | 'voting';
 
+export interface AnnouncementAttachment {
+  name: string;
+  dataUrl: string;
+}
+
 export interface Announcement {
   id: string;
   title: string;
   content: string;
   author: string;
+  location: string;
+  attachments: AnnouncementAttachment[];
   pinned: boolean;
   createdAt: string;
 }
