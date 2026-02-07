@@ -441,6 +441,10 @@
             class="flex items-center gap-1.5 px-3 py-2.5 text-xs font-semibold whitespace-nowrap transition-all border-b-2 border-transparent text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200">
             <i data-lucide="file-bar-chart" class="w-3.5 h-3.5"></i>회비 내역서
           </button>
+          <button onclick="switchTab('calendar')" id="tabCalendar"
+            class="flex items-center gap-1.5 px-3 py-2.5 text-xs font-semibold whitespace-nowrap transition-all border-b-2 border-transparent text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200">
+            <i data-lucide="calendar-days" class="w-3.5 h-3.5"></i>캘린더
+          </button>
         </div>
         <div class="flex items-center gap-1">
           <button onclick="openSettingsModal()"
@@ -1177,6 +1181,62 @@
     </div>
   </main>
 
+  <!-- ====== CALENDAR TAB ====== -->
+  <main id="panelCalendar" class="max-w-4xl mx-auto px-5 py-8 w-full hidden">
+    <div class="flex items-center justify-between mb-6 flex-wrap gap-3">
+      <div>
+        <h2 class="text-xl font-bold">캘린더</h2>
+        <p class="text-sm text-zinc-500 mt-0.5">생일 및 입출금 일정</p>
+      </div>
+      <div class="flex items-center gap-2">
+        <button onclick="calPrevMonth()"
+          class="p-2 rounded-xl bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-700 transition-colors">
+          <i data-lucide="chevron-left" class="w-4 h-4"></i>
+        </button>
+        <span id="calMonthLabel" class="text-sm font-bold min-w-[100px] text-center"></span>
+        <button onclick="calNextMonth()"
+          class="p-2 rounded-xl bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-700 transition-colors">
+          <i data-lucide="chevron-right" class="w-4 h-4"></i>
+        </button>
+        <button onclick="calGoToday()"
+          class="flex items-center gap-1.5 px-3 py-2 text-xs font-semibold rounded-xl bg-navy-600 text-white hover:bg-navy-700 transition-colors shadow-sm">
+          <i data-lucide="calendar-check" class="w-3.5 h-3.5"></i>오늘
+        </button>
+      </div>
+    </div>
+
+    <!-- Monthly Summary -->
+    <div class="grid grid-cols-3 gap-3 mb-6" id="calSummaryCards"></div>
+
+    <!-- Calendar Grid -->
+    <div class="bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl overflow-hidden mb-6">
+      <!-- Weekday Headers -->
+      <div class="grid grid-cols-7 border-b border-zinc-200 dark:border-zinc-700">
+        <div class="py-2 text-center text-[11px] font-bold text-red-400">일</div>
+        <div class="py-2 text-center text-[11px] font-bold text-zinc-500">월</div>
+        <div class="py-2 text-center text-[11px] font-bold text-zinc-500">화</div>
+        <div class="py-2 text-center text-[11px] font-bold text-zinc-500">수</div>
+        <div class="py-2 text-center text-[11px] font-bold text-zinc-500">목</div>
+        <div class="py-2 text-center text-[11px] font-bold text-zinc-500">금</div>
+        <div class="py-2 text-center text-[11px] font-bold text-blue-400">토</div>
+      </div>
+      <!-- Day Cells -->
+      <div class="grid grid-cols-7" id="calGrid"></div>
+    </div>
+
+    <!-- Selected Date Detail -->
+    <div id="calDetail" class="hidden mb-6"></div>
+
+    <!-- Empty State -->
+    <div id="calEmpty" class="hidden flex flex-col items-center justify-center py-16 text-center">
+      <div class="w-14 h-14 bg-zinc-100 dark:bg-zinc-800 rounded-2xl flex items-center justify-center mb-3 border border-zinc-200 dark:border-zinc-700">
+        <i data-lucide="calendar-x" class="w-7 h-7 text-zinc-400"></i>
+      </div>
+      <h3 class="text-base font-bold mb-1">이 달의 일정이 없습니다</h3>
+      <p class="text-sm text-zinc-500">생일이나 입출금 내역이 등록되면 캘린더에 표시됩니다.</p>
+    </div>
+  </main>
+
   <!-- ====== MEMBER MODAL ====== -->
   <div id="memberModal" class="fixed inset-0 z-[60] hidden flex items-end sm:items-center sm:justify-center">
     <div class="absolute inset-0 modal-backdrop transition-opacity" onclick="closeMemberModal()"></div>
@@ -1813,7 +1873,7 @@
     let currentTab = 'bylaws';
     function switchTab(tab) {
       currentTab = tab;
-      ['bylaws', 'members', 'fees', 'support', 'statements'].forEach(t => {
+      ['bylaws', 'members', 'fees', 'support', 'statements', 'calendar'].forEach(t => {
         const panel = document.getElementById('panel' + t.charAt(0).toUpperCase() + t.slice(1));
         const btn = document.getElementById('tab' + t.charAt(0).toUpperCase() + t.slice(1));
         if (t === tab) {
@@ -1829,6 +1889,7 @@
       if (tab === 'fees') { initFeeYear(); renderFeeTable(); }
       if (tab === 'support') { initSupportYear(); renderSupport(); }
       if (tab === 'statements') { initStmtYear(); renderStatements(); }
+      if (tab === 'calendar') { initCalendar(); renderCalendar(); }
       lucide.createIcons();
     }
 
@@ -2632,6 +2693,275 @@
     }
 
     function printStatements() { window.print(); }
+
+    // ===== CALENDAR TAB =====
+    let calYear = new Date().getFullYear();
+    let calMonth = new Date().getMonth();
+    let calSelectedDate = null;
+
+    function initCalendar() {
+      const today = new Date();
+      calYear = today.getFullYear();
+      calMonth = today.getMonth();
+      calSelectedDate = null;
+    }
+
+    function calPrevMonth() {
+      calMonth--;
+      if (calMonth < 0) { calMonth = 11; calYear--; }
+      calSelectedDate = null;
+      renderCalendar();
+    }
+
+    function calNextMonth() {
+      calMonth++;
+      if (calMonth > 11) { calMonth = 0; calYear++; }
+      calSelectedDate = null;
+      renderCalendar();
+    }
+
+    function calGoToday() {
+      const today = new Date();
+      calYear = today.getFullYear();
+      calMonth = today.getMonth();
+      calSelectedDate = `${calYear}-${String(calMonth + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+      renderCalendar();
+    }
+
+    function getCalendarData(year, month) {
+      const mm = String(month + 1).padStart(2, '0');
+      const prefix = `${year}-${mm}`;
+
+      const birthdays = {};
+      members.forEach(m => {
+        if (!m.birthday) return;
+        const bmd = m.birthday.slice(5);
+        if (bmd.startsWith(mm + '-')) {
+          const day = String(parseInt(bmd.slice(3), 10));
+          if (!birthdays[day]) birthdays[day] = [];
+          birthdays[day].push(m.name);
+        }
+      });
+
+      const txByDay = {};
+      transactions.forEach(tx => {
+        if (!tx.date || !tx.date.startsWith(prefix)) return;
+        const day = String(parseInt(tx.date.slice(8), 10));
+        if (!txByDay[day]) txByDay[day] = [];
+        txByDay[day].push(tx);
+      });
+
+      const eventsByDay = {};
+      events.forEach(ev => {
+        if (!ev.date || !ev.date.startsWith(prefix)) return;
+        const day = String(parseInt(ev.date.slice(8), 10));
+        if (!eventsByDay[day]) eventsByDay[day] = [];
+        eventsByDay[day].push(ev);
+      });
+
+      return { birthdays, txByDay, eventsByDay };
+    }
+
+    function renderCalendar() {
+      const grid = document.getElementById('calGrid');
+      const label = document.getElementById('calMonthLabel');
+      const detail = document.getElementById('calDetail');
+      const summary = document.getElementById('calSummaryCards');
+      const empty = document.getElementById('calEmpty');
+
+      label.textContent = `${calYear}년 ${calMonth + 1}월`;
+
+      const { birthdays, txByDay, eventsByDay } = getCalendarData(calYear, calMonth);
+      const firstDay = new Date(calYear, calMonth, 1).getDay();
+      const daysInMonth = new Date(calYear, calMonth + 1, 0).getDate();
+      const today = new Date();
+      const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+      const mm = String(calMonth + 1).padStart(2, '0');
+
+      let hasAnyEvent = false;
+      let html = '';
+
+      for (let i = 0; i < firstDay; i++) {
+        html += `<div class="min-h-[72px] sm:min-h-[96px] border-b border-r border-zinc-100 dark:border-zinc-700/50 p-1"></div>`;
+      }
+
+      for (let d = 1; d <= daysInMonth; d++) {
+        const dayKey = String(d);
+        const dateStr = `${calYear}-${mm}-${String(d).padStart(2, '0')}`;
+        const dow = (firstDay + d - 1) % 7;
+        const isToday = dateStr === todayStr;
+        const isSelected = dateStr === calSelectedDate;
+        const hasBirthday = birthdays[dayKey] && birthdays[dayKey].length > 0;
+        const hasTx = txByDay[dayKey] && txByDay[dayKey].length > 0;
+        const hasEvt = eventsByDay[dayKey] && eventsByDay[dayKey].length > 0;
+
+        if (hasBirthday || hasTx || hasEvt) hasAnyEvent = true;
+
+        let dayColor = 'text-zinc-700 dark:text-zinc-300';
+        if (dow === 0) dayColor = 'text-red-400';
+        if (dow === 6) dayColor = 'text-blue-400';
+
+        let cellBg = isToday ? 'bg-navy-50/60 dark:bg-navy-950/30' : '';
+        let ring = isSelected ? 'ring-2 ring-navy-500 ring-inset' : '';
+
+        html += `<div onclick="calSelectDate('${dateStr}')" class="min-h-[72px] sm:min-h-[96px] border-b border-r border-zinc-100 dark:border-zinc-700/50 p-1 cursor-pointer hover:bg-zinc-50 dark:hover:bg-zinc-700/30 transition-colors ${cellBg} ${ring}">`;
+
+        if (isToday) {
+          html += `<div class="flex items-center justify-center w-6 h-6 rounded-full bg-navy-600 text-white text-xs font-bold mb-0.5">${d}</div>`;
+        } else {
+          html += `<div class="text-xs font-semibold ${dayColor} mb-0.5 pl-0.5">${d}</div>`;
+        }
+
+        // Desktop: text details
+        if (hasBirthday) {
+          birthdays[dayKey].forEach(name => {
+            html += `<div class="hidden sm:flex items-center gap-0.5 text-[10px] text-pink-500 truncate mb-0.5" title="${name} 생일"><i data-lucide="cake" class="w-2.5 h-2.5 flex-shrink-0"></i><span class="truncate">${name}</span></div>`;
+          });
+        }
+        if (hasTx) {
+          txByDay[dayKey].slice(0, 2).forEach(tx => {
+            const dep = tx.type === 'deposit';
+            const cc = dep ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-500 dark:text-red-400';
+            html += `<div class="hidden sm:flex items-center gap-0.5 text-[10px] ${cc} truncate mb-0.5"><i data-lucide="${dep ? 'arrow-down-circle' : 'arrow-up-circle'}" class="w-2.5 h-2.5 flex-shrink-0"></i><span class="truncate">${dep ? '+' : '-'}${fmt(tx.amount)}</span></div>`;
+          });
+          if (txByDay[dayKey].length > 2) {
+            html += `<div class="hidden sm:block text-[9px] text-zinc-400 pl-0.5">+${txByDay[dayKey].length - 2}건</div>`;
+          }
+        }
+
+        // Mobile: colored dots
+        if (hasBirthday || hasTx || hasEvt) {
+          html += `<div class="flex sm:hidden items-center gap-0.5 mt-0.5 flex-wrap">`;
+          if (hasBirthday) html += `<span class="w-1.5 h-1.5 rounded-full bg-pink-400"></span>`;
+          if (hasTx) {
+            if (txByDay[dayKey]?.some(t => t.type === 'deposit')) html += `<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>`;
+            if (txByDay[dayKey]?.some(t => t.type === 'expense')) html += `<span class="w-1.5 h-1.5 rounded-full bg-red-400"></span>`;
+          }
+          if (hasEvt) html += `<span class="w-1.5 h-1.5 rounded-full bg-navy-500"></span>`;
+          html += `</div>`;
+        }
+
+        html += `</div>`;
+      }
+
+      const totalCells = firstDay + daysInMonth;
+      const remainder = totalCells % 7;
+      if (remainder > 0) {
+        for (let i = 0; i < 7 - remainder; i++) {
+          html += `<div class="min-h-[72px] sm:min-h-[96px] border-b border-r border-zinc-100 dark:border-zinc-700/50 p-1"></div>`;
+        }
+      }
+
+      grid.innerHTML = html;
+
+      // Monthly summary
+      const allTx = transactions.filter(tx => tx.date && tx.date.startsWith(`${calYear}-${mm}`));
+      const deposits = allTx.filter(t => t.type === 'deposit').reduce((s, t) => s + t.amount, 0);
+      const expenses = allTx.filter(t => t.type === 'expense').reduce((s, t) => s + t.amount, 0);
+      const bCount = Object.values(birthdays).flat().length;
+
+      summary.innerHTML = `
+        <div class="bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl p-4 text-center">
+          <p class="text-[11px] text-zinc-500 mb-0.5">이 달 생일</p>
+          <p class="tabular-nums text-lg font-extrabold text-pink-500">${bCount}<span class="text-[11px] font-medium text-zinc-400">명</span></p>
+        </div>
+        <div class="bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl p-4 text-center">
+          <p class="text-[11px] text-zinc-500 mb-0.5">입금</p>
+          <p class="tabular-nums text-lg font-extrabold text-emerald-600 dark:text-emerald-400">${fmt(deposits)}<span class="text-[11px] font-medium text-zinc-400">원</span></p>
+        </div>
+        <div class="bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl p-4 text-center">
+          <p class="text-[11px] text-zinc-500 mb-0.5">출금</p>
+          <p class="tabular-nums text-lg font-extrabold text-red-500 dark:text-red-400">${fmt(expenses)}<span class="text-[11px] font-medium text-zinc-400">원</span></p>
+        </div>`;
+
+      if (!hasAnyEvent) { empty.classList.remove('hidden'); } else { empty.classList.add('hidden'); }
+
+      if (calSelectedDate) { renderCalendarDetail(calSelectedDate); } else { detail.classList.add('hidden'); }
+
+      lucide.createIcons();
+    }
+
+    function calSelectDate(dateStr) {
+      calSelectedDate = (calSelectedDate === dateStr) ? null : dateStr;
+      renderCalendar();
+    }
+
+    function renderCalendarDetail(dateStr) {
+      const detail = document.getElementById('calDetail');
+      const day = parseInt(dateStr.slice(8), 10);
+      const mm = dateStr.slice(5, 7);
+      const month = parseInt(mm, 10);
+      const dateDisplay = `${calYear}년 ${month}월 ${day}일`;
+      const dowNames = ['일', '월', '화', '수', '목', '금', '토'];
+      const dowDisplay = dowNames[new Date(calYear, month - 1, day).getDay()] + '요일';
+
+      const dayBirthdays = members.filter(m => m.birthday && m.birthday.slice(5) === `${mm}-${String(day).padStart(2, '0')}`);
+      const dayTx = transactions.filter(tx => tx.date === dateStr);
+      const dayEvents = events.filter(ev => ev.date === dateStr);
+
+      if (dayBirthdays.length === 0 && dayTx.length === 0 && dayEvents.length === 0) {
+        detail.classList.add('hidden');
+        return;
+      }
+
+      detail.classList.remove('hidden');
+      let html = `<div class="bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl p-4 animate-fade-in">`;
+      html += `<h3 class="text-sm font-bold mb-3 flex items-center gap-1.5"><i data-lucide="calendar-days" class="w-4 h-4 text-navy-500"></i>${dateDisplay} (${dowDisplay})</h3>`;
+
+      if (dayBirthdays.length > 0) {
+        html += `<div class="mb-3"><p class="text-[11px] font-bold text-pink-500 mb-1.5 flex items-center gap-1"><i data-lucide="cake" class="w-3 h-3"></i>생일</p>`;
+        dayBirthdays.forEach(m => {
+          html += `<div class="flex items-center gap-2 py-1.5 px-2 rounded-lg bg-pink-50 dark:bg-pink-950/20 mb-1">
+            <div class="w-7 h-7 rounded-lg bg-pink-100 dark:bg-pink-900/30 flex items-center justify-center text-xs font-bold text-pink-600 dark:text-pink-400">${(m.name || '?').charAt(0)}</div>
+            <div><span class="text-xs font-semibold">${m.name}</span><span class="text-[10px] text-zinc-400 ml-1">${m.cohort || ''}</span></div>
+          </div>`;
+        });
+        html += `</div>`;
+      }
+
+      if (dayTx.length > 0) {
+        html += `<div class="mb-3"><p class="text-[11px] font-bold text-zinc-500 mb-1.5 flex items-center gap-1"><i data-lucide="receipt" class="w-3 h-3"></i>입출금 내역</p>`;
+        dayTx.forEach(tx => {
+          const dep = tx.type === 'deposit';
+          const bg = dep ? 'bg-emerald-50 dark:bg-emerald-950/20' : 'bg-red-50 dark:bg-red-950/20';
+          const tc = dep ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-500 dark:text-red-400';
+          html += `<div class="flex items-center justify-between py-2 px-2 rounded-lg ${bg} mb-1">
+            <div class="flex items-center gap-2 min-w-0">
+              <i data-lucide="${dep ? 'arrow-down-circle' : 'arrow-up-circle'}" class="w-4 h-4 ${tc} flex-shrink-0"></i>
+              <div class="min-w-0">
+                <div class="flex items-center gap-1">
+                  <span class="text-[10px] font-bold px-1 py-0.5 rounded ${bg} ${tc}">${dep ? '입금' : '사용'}</span>
+                  ${tx.category && SUPPORT_CATS[tx.category] ? `<span class="text-[10px] font-bold px-1 py-0.5 rounded bg-navy-50 dark:bg-navy-950/50 text-navy-600 dark:text-navy-400">${SUPPORT_CATS[tx.category].label}</span>` : ''}
+                </div>
+                <p class="text-xs font-medium truncate mt-0.5">${tx.description || '(설명 없음)'}</p>
+              </div>
+            </div>
+            <span class="tabular-nums text-sm font-bold ${tc} flex-shrink-0 ml-2">${dep ? '+' : '-'}${fmt(tx.amount)}원</span>
+          </div>`;
+        });
+        html += `</div>`;
+      }
+
+      if (dayEvents.length > 0) {
+        html += `<div><p class="text-[11px] font-bold text-zinc-500 mb-1.5 flex items-center gap-1"><i data-lucide="calendar-heart" class="w-3 h-3"></i>행사</p>`;
+        dayEvents.forEach(ev => {
+          const cat = SUPPORT_CATS[ev.category] || { label: ev.category || '기타', icon: 'calendar', color: 'navy' };
+          html += `<div class="flex items-center justify-between py-2 px-2 rounded-lg bg-navy-50 dark:bg-navy-950/20 mb-1">
+            <div class="flex items-center gap-2">
+              <i data-lucide="${cat.icon}" class="w-4 h-4 text-navy-500"></i>
+              <div><span class="text-[10px] font-bold px-1 py-0.5 rounded bg-navy-50 dark:bg-navy-950/50 text-navy-600 dark:text-navy-400">${cat.label}</span>
+              <p class="text-xs font-medium mt-0.5">${ev.title || ''}</p></div>
+            </div>
+            <span class="tabular-nums text-sm font-bold text-navy-600 dark:text-navy-400">${fmt(ev.amount || 0)}원</span>
+          </div>`;
+        });
+        html += `</div>`;
+      }
+
+      html += `</div>`;
+      detail.innerHTML = html;
+      lucide.createIcons();
+    }
 
     // ===== SUPPORT MANAGEMENT =====
     let currentSupportCat = 'condolence';
