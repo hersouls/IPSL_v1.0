@@ -3029,9 +3029,14 @@
           FirestoreSync.saveEvents();
           showToast('클라우드 동기화가 완료되었습니다');
         }
-        // Firestore 데이터로 UI 갱신
+        // Firestore 데이터로 UI 전체 갱신
         updateHeroStats();
         updateDynamicAmounts();
+        initCohorts();
+        renderMembers();
+        if (typeof renderBudget === 'function') renderBudget();
+        if (typeof renderStatements === 'function') renderStatements();
+        if (typeof renderSupport === 'function') renderSupport();
         lucide.createIcons();
         console.log('Firestore 동기화 완료');
       }).catch(err => {
