@@ -8,3 +8,5 @@ node_modules/
 NUL
 Thumbs.db
 .DS_Store
+
+.vercel

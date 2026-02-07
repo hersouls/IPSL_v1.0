@@ -1229,7 +1229,8 @@
 
     <!-- Empty State -->
     <div id="calEmpty" class="hidden flex flex-col items-center justify-center py-16 text-center">
-      <div class="w-14 h-14 bg-zinc-100 dark:bg-zinc-800 rounded-2xl flex items-center justify-center mb-3 border border-zinc-200 dark:border-zinc-700">
+      <div
+        class="w-14 h-14 bg-zinc-100 dark:bg-zinc-800 rounded-2xl flex items-center justify-center mb-3 border border-zinc-200 dark:border-zinc-700">
         <i data-lucide="calendar-x" class="w-7 h-7 text-zinc-400"></i>
       </div>
       <h3 class="text-base font-bold mb-1">이 달의 일정이 없습니다</h3>
@@ -2147,8 +2148,10 @@
     function saveMember() {
       const name = document.getElementById('mName').value.trim();
       if (!name) { alert('이름은 필수입니다.'); return; }
+      // Check for duplicates
+      const dupe = members.find((m, i) => m.name === name && i !== editMemberIdx);
+      if (dupe) { alert('이미 등록된 이름입니다 (' + (dupe.cohort || '기수미정') + '). 동명이인의 경우 이름 뒤에 숫자를 붙여주세요.'); return; }
       const data = {
-        name,
         name,
         degree: document.getElementById('mDegree').value,
         cohort: document.getElementById('mCohort').value,
@@ -2191,7 +2194,7 @@
         (m.name || '').toLowerCase().includes(q) ||
         (m.cohort || '').toLowerCase().includes(q) ||
         (m.phone || '').includes(q)
-      );
+      ).sort((a, b) => (a.name || '').localeCompare(b.name || ''));
       const list = document.getElementById('memberList');
       const empty = document.getElementById('memberEmpty');
       document.getElementById('memberTotalCount').textContent = members.length;
@@ -2285,6 +2288,32 @@
       if (!fees[year]) fees[year] = {};
       if (!fees[year][memberId]) fees[year][memberId] = {};
       fees[year][memberId][month] = amount;
+
+      // Sync to Transactions
+      const feeRef = `fee_${year}_${memberId}_${month}`;
+      const memberName = members.find(m => m.id === memberId)?.name || '알수없음';
+      const txIndex = transactions.findIndex(t => t.feeRef === feeRef);
+
+      const txData = {
+        type: 'deposit',
+        amount: amount,
+        description: `${memberName} ${parseInt(month) + 1}월 회비`,
+        category: null,
+        feeRef: feeRef,
+        // If exist, keep date, else today
+        date: txIndex >= 0 ? transactions[txIndex].date : new Date().toISOString().slice(0, 10)
+      };
+
+      if (txIndex >= 0) {
+        transactions[txIndex] = { ...transactions[txIndex], ...txData };
+        FirestoreSync.saveTransactions(); // Assuming saveTx does individual or batch, but safe to call saveTx wrapper
+      } else {
+        txData.id = 't_' + Date.now();
+        txData.createdAt = new Date().toISOString();
+        transactions.push(txData);
+      }
+      saveTx(); // This handles FirestoreSync and UI update
+
       saveFees();
       closeFeeModal();
       renderFeeTable();
@@ -2295,6 +2324,16 @@
       const { memberId, year, month } = feeEditTarget;
       if (!confirm(MONTHS[month] + ' 납부 기록을 삭제하시겠습니까?')) return;
       if (fees[year]?.[memberId]) fees[year][memberId][month] = 0;
+
+      // Remove linked transaction
+      const feeRef = `fee_${year}_${memberId}_${month}`;
+      const txIndex = transactions.findIndex(t => t.feeRef === feeRef);
+      if (txIndex >= 0) {
+        FirestoreSync.deleteTransaction(transactions[txIndex].id);
+        transactions.splice(txIndex, 1);
+        saveTx();
+      }
+
       saveFees();
       closeFeeModal();
       renderFeeTable();
@@ -2315,15 +2354,49 @@
       }
       table.classList.remove('hidden'); empty.classList.add('hidden');
 
-      let totalPaidAmt = 0, totalExpectedAmt = members.length * 12 * settings.monthlyFee;
+
+      // Sort members for display
+      const sortedMembers = [...members].sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+
+      let totalPaidAmt = 0;
+      let totalExpectedAmt = 0;
+      const today = new Date();
+      const currentYear = today.getFullYear();
+      const currentMonth = today.getMonth(); // 0-based
+      const targetYear = parseInt(year);
+
+      // Calculate Months Passed
+      let monthsPassed = 12;
+      if (targetYear > currentYear) monthsPassed = 0;
+      else if (targetYear === currentYear) monthsPassed = currentMonth + 1;
+
+      // Base Expected Amount (until today)
+      totalExpectedAmt = members.length * monthsPassed * settings.monthlyFee;
+
       let paidCount = 0;
       members.forEach(m => {
         for (let mo = 0; mo < 12; mo++) {
           const amt = fees[year]?.[m.id]?.[mo] || 0;
-          if (amt > 0) { totalPaidAmt += amt; paidCount++; }
+          if (amt > 0) {
+            totalPaidAmt += amt;
+            // Count payment only if within expected months? Or just raw count?
+            // "Rate" usually implies (Actual / Expected).
+            // paidCount doesn't make sense if amounts vary. 
+            // Let's use Amount Based Rate as requested earlier in code comments but never implemented.
+          }
         }
       });
-      const rate = (members.length * 12) > 0 ? Math.round(paidCount / (members.length * 12) * 100) : 0;
+
+      // Unpaid = Expected - Paid (Clamp to 0 if negative due to prepayments?)
+      // User asked: "Expected (by Today) - Paid (by Today)".
+      // If I prepaid next month, Paid > Expected?
+      // Simple formula: Unpaid = Math.max(0, totalExpectedAmt - totalPaidAmt)?
+      // Or just difference.
+      const unpaidAmt = totalExpectedAmt - totalPaidAmt;
+
+      // Rate = Paid / Expected
+      // If Expected is 0 (future year), Rate is 0 or 100? Let's say 0.
+      const rate = totalExpectedAmt > 0 ? Math.round(totalPaidAmt / totalExpectedAmt * 100) : 0;
       summary.innerHTML = `
         <div class="bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl p-4 text-center">
             <p class="text-[11px] text-zinc-500 mb-0.5">총 납부</p>
@@ -2331,7 +2404,7 @@
         </div>
         <div class="bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl p-4 text-center">
             <p class="text-[11px] text-zinc-500 mb-0.5">미납</p>
-            <p class="tabular-nums text-lg font-extrabold text-red-600 dark:text-red-400">${(totalExpectedAmt - totalPaidAmt).toLocaleString()}<span class="text-[11px] font-medium text-zinc-400">원</span></p>
+            <p class="tabular-nums text-lg font-extrabold text-red-600 dark:text-red-400">${unpaidAmt.toLocaleString()}<span class="text-[11px] font-medium text-zinc-400">원</span></p>
         </div>
         <div class="bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl p-4 text-center">
             <p class="text-[11px] text-zinc-500 mb-0.5">납부율</p>
@@ -2348,7 +2421,7 @@
         <th class="text-right py-2.5 px-3 font-bold text-xs min-w-[90px]">합계</th>
     </tr>`;
 
-      tbody.innerHTML = members.map(m => {
+      tbody.innerHTML = sortedMembers.map(m => {
         let paidAmt = 0, paidMo = 0;
         const cells = MONTHS.map((_, mi) => {
           const amt = fees[year]?.[m.id]?.[mi] || 0;
