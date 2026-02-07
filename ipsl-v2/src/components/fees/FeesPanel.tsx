@@ -32,12 +32,16 @@ export default function FeesPanel() {
   const [showPin, setShowPin] = useState(false);
   const pinInputRef = useRef<HTMLInputElement>(null);
 
+  // Pending cell to open after PIN success
+  const [pendingCell, setPendingCell] = useState<{ memberId: string; month: number } | null>(null);
+
   const handleUnlockClick = () => {
     if (unlocked) {
       setUnlocked(false);
       showToast('회비관리가 잠금되었습니다');
       return;
     }
+    setPendingCell(null);
     setShowPinDialog(true);
     setPinInput('');
     setPinError(false);
@@ -50,7 +54,12 @@ export default function FeesPanel() {
       setUnlocked(true);
       setShowPinDialog(false);
       setPinError(false);
-      showToast('회비관리 잠금이 해제되었습니다');
+      if (pendingCell) {
+        openFeeModal(pendingCell.memberId, year, pendingCell.month);
+        setPendingCell(null);
+      } else {
+        showToast('회비관리 잠금이 해제되었습니다');
+      }
     } else {
       setPinError(true);
       setPinInput('');
@@ -60,12 +69,17 @@ export default function FeesPanel() {
 
   const handlePinKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') handlePinSubmit();
-    if (e.key === 'Escape') setShowPinDialog(false);
+    if (e.key === 'Escape') { setShowPinDialog(false); setPendingCell(null); }
   };
 
   const handleCellClick = (memberId: string, mi: number) => {
     if (!unlocked) {
-      handleUnlockClick();
+      setPendingCell({ memberId, month: mi });
+      setShowPinDialog(true);
+      setPinInput('');
+      setPinError(false);
+      setShowPin(false);
+      setTimeout(() => pinInputRef.current?.focus(), 100);
       return;
     }
     openFeeModal(memberId, year, mi);
