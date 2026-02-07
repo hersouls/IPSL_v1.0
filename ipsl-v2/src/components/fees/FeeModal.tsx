@@ -19,6 +19,7 @@ export default function FeeModal() {
   const setTransactions = useTransactionStore(s => s.setTransactions);
 
   const [amount, setAmount] = useState('');
+  const [date, setDate] = useState('');
 
   const member = feeEditTarget ? members.find(m => m.id === feeEditTarget.memberId) : null;
   const currentAmt = feeEditTarget ? (useFeeStore.getState().fees[feeEditTarget.year]?.[feeEditTarget.memberId]?.[feeEditTarget.month] || 0) : 0;
@@ -26,6 +27,9 @@ export default function FeeModal() {
   useEffect(() => {
     if (feeModalOpen && feeEditTarget) {
       setAmount(currentAmt > 0 ? currentAmt.toLocaleString() : settings.monthlyFee.toLocaleString());
+      const feeRef = `fee_${feeEditTarget.year}_${feeEditTarget.memberId}_${feeEditTarget.month}`;
+      const existingTx = transactions.find(t => t.feeRef === feeRef);
+      setDate(existingTx?.date || new Date().toISOString().slice(0, 10));
     }
   }, [feeModalOpen, feeEditTarget]);
 
@@ -48,7 +52,7 @@ export default function FeeModal() {
       description: `${memberName} ${parseInt(String(month)) + 1}월 회비`,
       category: null,
       feeRef,
-      date: txIdx >= 0 ? transactions[txIdx].date : new Date().toISOString().slice(0, 10),
+      date,
     };
 
     if (txIdx >= 0) {
@@ -95,6 +99,15 @@ export default function FeeModal() {
             onChange={e => setAmount(fmtInputValue(e.target.value))}
             className="input-field text-right"
             placeholder="10,000"
+          />
+        </div>
+        <div>
+          <label className="block text-[12px] font-bold text-zinc-600 dark:text-zinc-400 mb-1">납부일</label>
+          <input
+            type="date"
+            value={date}
+            onChange={e => setDate(e.target.value)}
+            className="input-field"
           />
         </div>
         <button onClick={handleSave} className="w-full py-3 rounded-xl text-sm font-bold bg-navy-600 text-white hover:bg-navy-700 transition-colors">

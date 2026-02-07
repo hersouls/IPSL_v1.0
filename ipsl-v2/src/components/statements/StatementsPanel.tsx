@@ -88,8 +88,8 @@ export default function StatementsPanel() {
   const yearTx = transactions
     .filter(tx => tx.date?.startsWith(year))
     .sort((a, b) => b.date.localeCompare(a.date));
-  const txDeposits = yearTx.filter(t => t.type === 'deposit').reduce((s, t) => s + t.amount, 0);
-  const totalDeposits = totalPaidAmt + txDeposits; // 회비관리 납부 + 입금 거래 합산
+  const txDeposits = yearTx.filter(t => t.type === 'deposit' && !t.feeRef).reduce((s, t) => s + t.amount, 0);
+  const totalDeposits = totalPaidAmt + txDeposits; // 회비 납부(그리드) + 수동 입금(feeRef 제외)
   const totalExpenses = yearTx.filter(t => t.type === 'expense').reduce((s, t) => s + t.amount, 0);
   const balance = totalDeposits - totalExpenses;
 
