@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { Eye, EyeOff, CheckCircle2, Search } from 'lucide-react';
+import MemberAvatar from '../ui/MemberAvatar';
 import Modal from '../ui/Modal';
 import { useVotingStore } from '../../stores/votingStore';
 import { useMemberStore } from '../../stores/memberStore';
@@ -102,7 +103,7 @@ export default function VoteCastModal() {
             <input
               value={search}
               onChange={e => setSearch(e.target.value)}
-              className="input-field pl-9 text-xs"
+              className="input-field !pl-10 text-xs"
               placeholder="이름 또는 기수 검색"
             />
           </div>
@@ -118,11 +119,10 @@ export default function VoteCastModal() {
                   type="button"
                   onClick={() => handleSelectMember(m.id)}
                   disabled={voted}
-                  className={`relative flex flex-col items-center gap-1 p-2.5 rounded-xl text-center transition-colors ${
-                    voted
+                  className={`relative flex flex-col items-center gap-1 p-2.5 rounded-xl text-center transition-colors ${voted
                       ? 'opacity-50 cursor-not-allowed bg-zinc-100 dark:bg-zinc-700/50'
                       : 'bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 hover:border-navy-400 dark:hover:border-navy-500 hover:bg-navy-50 dark:hover:bg-navy-950/20'
-                  }`}
+                    }`}
                 >
                   {m.avatar ? (
                     <img src={m.avatar} alt="" className="w-10 h-10 rounded-xl object-cover" />
@@ -194,7 +194,7 @@ export default function VoteCastModal() {
           <div className="p-3 rounded-xl bg-navy-50 dark:bg-navy-950/30">
             <p className="text-xs text-zinc-500 dark:text-zinc-400 mb-0.5">안건</p>
             <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">{session.title}</p>
-            <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">투표자: <span className="font-semibold text-zinc-700 dark:text-zinc-300">{selectedMember?.name}</span></p>
+            <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1 flex items-center gap-1">투표자: <MemberAvatar name={selectedMember?.name || '?'} avatar={selectedMember?.avatar} size="xs" /> <span className="font-semibold text-zinc-700 dark:text-zinc-300">{selectedMember?.name}</span></p>
           </div>
 
           <div className="space-y-2">
@@ -206,32 +206,29 @@ export default function VoteCastModal() {
                   key={k}
                   type="button"
                   onClick={() => setChoice(k)}
-                  className={`w-full flex items-center gap-3 p-4 rounded-xl border-2 transition-all ${
-                    selected
+                  className={`w-full flex items-center gap-3 p-4 rounded-xl border-2 transition-all ${selected
                       ? k === 'approve'
                         ? 'border-emerald-400 bg-emerald-50 dark:bg-emerald-900/20'
                         : k === 'reject'
-                        ? 'border-red-400 bg-red-50 dark:bg-red-900/20'
-                        : 'border-zinc-400 bg-zinc-50 dark:bg-zinc-700/50'
+                          ? 'border-red-400 bg-red-50 dark:bg-red-900/20'
+                          : 'border-zinc-400 bg-zinc-50 dark:bg-zinc-700/50'
                       : 'border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-600'
-                  }`}
+                    }`}
                 >
-                  <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
-                    selected
+                  <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${selected
                       ? k === 'approve' ? 'border-emerald-500 bg-emerald-500' :
                         k === 'reject' ? 'border-red-500 bg-red-500' :
-                        'border-zinc-400 bg-zinc-400'
+                          'border-zinc-400 bg-zinc-400'
                       : 'border-zinc-300 dark:border-zinc-600'
-                  }`}>
+                    }`}>
                     {selected && <div className="w-2 h-2 rounded-full bg-white" />}
                   </div>
-                  <span className={`text-sm font-bold ${
-                    selected
+                  <span className={`text-sm font-bold ${selected
                       ? k === 'approve' ? 'text-emerald-700 dark:text-emerald-400' :
                         k === 'reject' ? 'text-red-600 dark:text-red-400' :
-                        'text-zinc-600 dark:text-zinc-300'
+                          'text-zinc-600 dark:text-zinc-300'
                       : 'text-zinc-700 dark:text-zinc-300'
-                  }`}>
+                    }`}>
                     {info.label}
                   </span>
                 </button>
@@ -242,11 +239,10 @@ export default function VoteCastModal() {
           <button
             onClick={handleVoteSubmit}
             disabled={!choice}
-            className={`w-full py-3 rounded-xl text-sm font-bold transition-colors ${
-              choice
+            className={`w-full py-3 rounded-xl text-sm font-bold transition-colors ${choice
                 ? 'bg-navy-600 text-white hover:bg-navy-700'
                 : 'bg-zinc-200 dark:bg-zinc-700 text-zinc-400 cursor-not-allowed'
-            }`}
+              }`}
           >
             투표 제출하기
           </button>

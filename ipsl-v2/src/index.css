@@ -255,16 +255,32 @@ input[type="number"] {
 }
 
 @media print {
-  .no-print {
+  .no-print, nav, .fixed, [class*="z-50"], [class*="z-[100]"], [class*="z-[110]"] {
     display: none !important;
   }
 
-  .card, section {
-    break-inside: avoid;
-    box-shadow: none;
+  body, .bg-zinc-50, .dark\:bg-zinc-900 {
+    background: white !important;
+    color: black !important;
   }
 
-  body {
-    background: #fff;
+  .bg-white, .dark\:bg-zinc-800 {
+    background: white !important;
+    box-shadow: none !important;
+    border-color: #e5e7eb !important;
+  }
+
+  main {
+    padding: 0 !important;
+    max-width: 100% !important;
+  }
+
+  .rounded-2xl, .rounded-xl, .card, section {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+
+  table {
+    font-size: 11px !important;
   }
 }

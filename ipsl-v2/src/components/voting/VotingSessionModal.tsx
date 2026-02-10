@@ -42,8 +42,8 @@ export default function VotingSessionModal() {
 
   const handleSave = () => {
     const trimmed = title.trim();
-    if (!trimmed) { alert('안건 제목을 입력하세요.'); return; }
-    if (!endDate) { alert('투표 마감일을 선택하세요.'); return; }
+    if (!trimmed) { showToast('안건 제목을 입력하세요.'); return; }
+    if (!endDate) { showToast('투표 마감일을 선택하세요.'); return; }
 
     if (isEdit && editVotingSessionId) {
       updateSession(editVotingSessionId, {

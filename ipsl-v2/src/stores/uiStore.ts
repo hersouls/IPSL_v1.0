@@ -6,6 +6,15 @@ interface ToastData {
   visible: boolean;
 }
 
+interface ConfirmModalData {
+  open: boolean;
+  title: string;
+  description: string;
+  confirmLabel: string;
+  confirmColor: 'red' | 'navy';
+  onConfirm: (() => void) | null;
+}
+
 interface UiState {
   // Tab
   currentTab: TabId;
@@ -57,6 +66,15 @@ interface UiState {
   openAnnouncementModal: (id?: string | null) => void;
   closeAnnouncementModal: () => void;
 
+  boardPostModalOpen: boolean;
+  editBoardPostId: string | null;
+  openBoardPostModal: (id?: string | null) => void;
+  closeBoardPostModal: () => void;
+  // Terms modal
+  termsModalOpen: boolean;
+  openTermsModal: () => void;
+  closeTermsModal: () => void;
+
   // Calendar
   calYear: number;
   calMonth: number;
@@ -69,6 +87,11 @@ interface UiState {
   // Toast
   toast: ToastData;
   showToast: (message: string) => void;
+
+  // Confirm modal
+  confirmModal: ConfirmModalData;
+  openConfirmModal: (opts: { title: string; description: string; confirmLabel?: string; confirmColor?: 'red' | 'navy'; onConfirm: () => void }) => void;
+  closeConfirmModal: () => void;
 
   // Dark mode
   isDark: boolean;
@@ -151,6 +174,17 @@ export const useUiStore = create<UiState>((set, get) => ({
   openAnnouncementModal: (id = null) => set({ announcementModalOpen: true, editAnnouncementId: id ?? null }),
   closeAnnouncementModal: () => set({ announcementModalOpen: false, editAnnouncementId: null }),
 
+  // Board post modal
+  boardPostModalOpen: false,
+  editBoardPostId: null,
+  openBoardPostModal: (id = null) => set({ boardPostModalOpen: true, editBoardPostId: id ?? null }),
+  closeBoardPostModal: () => set({ boardPostModalOpen: false, editBoardPostId: null }),
+
+  // Terms modal
+  termsModalOpen: false,
+  openTermsModal: () => set({ termsModalOpen: true }),
+  closeTermsModal: () => set({ termsModalOpen: false }),
+
   // Calendar
   calYear: new Date().getFullYear(),
   calMonth: new Date().getMonth(),
@@ -189,6 +223,22 @@ export const useUiStore = create<UiState>((set, get) => ({
     set({ toast: { message, visible: true } });
     setTimeout(() => set({ toast: { message: '', visible: false } }), 2500);
   },
+
+  // Confirm modal
+  confirmModal: { open: false, title: '', description: '', confirmLabel: '삭제', confirmColor: 'red', onConfirm: null },
+  openConfirmModal: (opts) => set({
+    confirmModal: {
+      open: true,
+      title: opts.title,
+      description: opts.description,
+      confirmLabel: opts.confirmLabel || '삭제',
+      confirmColor: opts.confirmColor || 'red',
+      onConfirm: opts.onConfirm,
+    },
+  }),
+  closeConfirmModal: () => set({
+    confirmModal: { open: false, title: '', description: '', confirmLabel: '삭제', confirmColor: 'red', onConfirm: null },
+  }),
 
   // Dark mode
   isDark: loadDarkMode(),

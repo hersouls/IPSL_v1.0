@@ -8,9 +8,10 @@ import { useUiStore } from '../../stores/uiStore';
 import { MONTHS } from '../../constants';
 import { fmtInputValue, parseFmt } from '../../utils/format';
 import { transactionId } from '../../utils/id';
+import MemberAvatar from '../ui/MemberAvatar';
 
 export default function FeeModal() {
-  const { feeModalOpen, feeEditTarget, closeFeeModal, showToast } = useUiStore();
+  const { feeModalOpen, feeEditTarget, closeFeeModal, showToast, openConfirmModal } = useUiStore();
   const members = useMemberStore(s => s.members);
   const settings = useSettingsStore(s => s.settings);
   const setFee = useFeeStore(s => s.setFee);
@@ -36,7 +37,7 @@ export default function FeeModal() {
   const handleSave = () => {
     if (!feeEditTarget) return;
     const val = parseFmt(amount);
-    if (val <= 0) { alert('금액을 입력하세요.'); return; }
+    if (val <= 0) { showToast('금액을 입력하세요.'); return; }
 
     const { memberId, year, month } = feeEditTarget;
     setFee(year, memberId, month, val);
@@ -70,20 +71,27 @@ export default function FeeModal() {
 
   const handleDelete = () => {
     if (!feeEditTarget) return;
-    if (!confirm(`${MONTHS[feeEditTarget.month]} 납부 기록을 삭제하시겠습니까?`)) return;
 
-    const { memberId, year, month } = feeEditTarget;
-    deleteFee(year, memberId, month);
+    openConfirmModal({
+      title: '납부 기록 삭제',
+      description: `${MONTHS[feeEditTarget.month]} 납부 기록을 삭제하시겠습니까?`,
+      confirmLabel: '삭제',
+      confirmColor: 'red',
+      onConfirm: () => {
+        const { memberId, year, month } = feeEditTarget;
+        deleteFee(year, memberId, month);
 
-    const feeRef = `fee_${year}_${memberId}_${month}`;
-    const txIdx = transactions.findIndex(t => t.feeRef === feeRef);
-    if (txIdx >= 0) {
-      const updated = transactions.filter((_, i) => i !== txIdx);
-      setTransactions(updated);
-    }
+        const feeRef = `fee_${year}_${memberId}_${month}`;
+        const txIdx = transactions.findIndex(t => t.feeRef === feeRef);
+        if (txIdx >= 0) {
+          const updated = transactions.filter((_, i) => i !== txIdx);
+          setTransactions(updated);
+        }
 
-    closeFeeModal();
-    showToast('납부 기록이 삭제되었습니다');
+        closeFeeModal();
+        showToast('납부 기록이 삭제되었습니다');
+      }
+    });
   };
 
   if (!feeEditTarget) return null;
@@ -91,6 +99,15 @@ export default function FeeModal() {
   return (
     <Modal open={feeModalOpen} onClose={closeFeeModal} title={`${member?.name || ''} - ${MONTHS[feeEditTarget.month]} 회비`}>
       <div className="space-y-4">
+        {member && (
+          <div className="flex items-center gap-3 p-3 rounded-xl bg-zinc-50 dark:bg-zinc-700/30">
+            <MemberAvatar name={member.name} avatar={member.avatar} size="md" />
+            <div>
+              <p className="text-sm font-bold text-zinc-900 dark:text-zinc-100">{member.name}</p>
+              <p className="text-[11px] text-zinc-500">{member.cohort || ''}</p>
+            </div>
+          </div>
+        )}
         <p className="text-[13px] text-zinc-500">{currentAmt > 0 ? '납부 금액을 수정하세요.' : '납부 금액을 입력하세요.'}</p>
         <div>
           <label className="block text-[12px] font-bold text-zinc-600 dark:text-zinc-400 mb-1">금액</label>

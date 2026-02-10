@@ -3,7 +3,7 @@ import {
   writeBatch, deleteDoc,
 } from 'firebase/firestore';
 import { db } from './firebase';
-import type { Member, Transaction, Event, Fees, Settings, Schedule, VotingSession, Announcement } from '../types';
+import type { Member, Transaction, Event, Fees, Settings, Schedule, VotingSession, Announcement, BoardPost } from '../types';
 import { DEFAULT_SETTINGS } from '../constants';
 
 // ── LOAD ──────────────────────────────────────────
@@ -14,8 +14,8 @@ export async function loadSettings(): Promise<Settings> {
     if (snap.exists()) {
       return { ...DEFAULT_SETTINGS, ...(snap.data() as Partial<Settings>) };
     }
-  } catch (e) {
-    console.warn('Firestore loadSettings failed:', e);
+  } catch {
+    // silent
   }
   return { ...DEFAULT_SETTINGS };
 }
@@ -26,8 +26,8 @@ export async function loadMembers(): Promise<Member[]> {
     if (!snap.empty) {
       return snap.docs.map(d => ({ id: d.id, ...d.data() } as Member));
     }
-  } catch (e) {
-    console.warn('Firestore loadMembers failed:', e);
+  } catch {
+    // silent
   }
   return [];
 }
@@ -40,8 +40,8 @@ export async function loadFees(): Promise<Fees> {
       snap.docs.forEach(d => { fees[d.id] = d.data() as Record<string, Record<number, number>>; });
       return fees;
     }
-  } catch (e) {
-    console.warn('Firestore loadFees failed:', e);
+  } catch {
+    // silent
   }
   return {};
 }
@@ -52,8 +52,8 @@ export async function loadTransactions(): Promise<Transaction[]> {
     if (!snap.empty) {
       return snap.docs.map(d => ({ id: d.id, ...d.data() } as Transaction));
     }
-  } catch (e) {
-    console.warn('Firestore loadTransactions failed:', e);
+  } catch {
+    // silent
   }
   return [];
 }
@@ -64,8 +64,8 @@ export async function loadEvents(): Promise<Event[]> {
     if (!snap.empty) {
       return snap.docs.map(d => ({ id: d.id, ...d.data() } as Event));
     }
-  } catch (e) {
-    console.warn('Firestore loadEvents failed:', e);
+  } catch {
+    // silent
   }
   return [];
 }
@@ -76,8 +76,8 @@ export async function loadSchedules(): Promise<Schedule[]> {
     if (!snap.empty) {
       return snap.docs.map(d => ({ id: d.id, ...d.data() } as Schedule));
     }
-  } catch (e) {
-    console.warn('Firestore loadSchedules failed:', e);
+  } catch {
+    // silent
   }
   return [];
 }
@@ -88,8 +88,8 @@ export async function loadVotingSessions(): Promise<VotingSession[]> {
     if (!snap.empty) {
       return snap.docs.map(d => ({ id: d.id, ...d.data() } as VotingSession));
     }
-  } catch (e) {
-    console.warn('Firestore loadVotingSessions failed:', e);
+  } catch {
+    // silent
   }
   return [];
 }
@@ -100,15 +100,27 @@ export async function loadAnnouncements(): Promise<Announcement[]> {
     if (!snap.empty) {
       return snap.docs.map(d => ({ id: d.id, ...d.data() } as Announcement));
     }
-  } catch (e) {
-    console.warn('Firestore loadAnnouncements failed:', e);
+  } catch {
+    // silent
+  }
+  return [];
+}
+
+export async function loadBoardPosts(): Promise<BoardPost[]> {
+  try {
+    const snap = await getDocs(collection(db, 'boardPosts'));
+    if (!snap.empty) {
+      return snap.docs.map(d => ({ id: d.id, ...d.data() } as BoardPost));
+    }
+  } catch {
+    // silent
   }
   return [];
 }
 
 export async function loadAll() {
-  const [settings, members, fees, transactions, events, schedules, votingSessions, announcements] = await Promise.allSettled([
-    loadSettings(), loadMembers(), loadFees(), loadTransactions(), loadEvents(), loadSchedules(), loadVotingSessions(), loadAnnouncements(),
+  const [settings, members, fees, transactions, events, schedules, votingSessions, announcements, boardPosts] = await Promise.allSettled([
+    loadSettings(), loadMembers(), loadFees(), loadTransactions(), loadEvents(), loadSchedules(), loadVotingSessions(), loadAnnouncements(), loadBoardPosts(),
   ]);
   return {
     settings: settings.status === 'fulfilled' ? settings.value : { ...DEFAULT_SETTINGS },
@@ -119,6 +131,7 @@ export async function loadAll() {
     schedules: schedules.status === 'fulfilled' ? schedules.value : [],
     votingSessions: votingSessions.status === 'fulfilled' ? votingSessions.value : [],
     announcements: announcements.status === 'fulfilled' ? announcements.value : [],
+    boardPosts: boardPosts.status === 'fulfilled' ? boardPosts.value : [],
   };
 }
 
@@ -128,7 +141,7 @@ export function saveSettings(settings: Settings) {
   const ref = doc(db, 'settings', 'config');
   const batch = writeBatch(db);
   batch.set(ref, JSON.parse(JSON.stringify(settings)));
-  batch.commit().catch(e => console.warn('Firestore saveSettings failed:', e));
+  batch.commit().catch(() => {});
 }
 
 export function saveMembers(members: Member[]) {
@@ -137,7 +150,7 @@ export function saveMembers(members: Member[]) {
     const { id, ...data } = m;
     batch.set(doc(db, 'members', id), data);
   });
-  batch.commit().catch(e => console.warn('Firestore saveMembers failed:', e));
+  batch.commit().catch(() => {});
 }
 
 export function saveFees(fees: Fees) {
@@ -145,7 +158,7 @@ export function saveFees(fees: Fees) {
   Object.keys(fees).forEach(year => {
     batch.set(doc(db, 'fees', year), fees[year]);
   });
-  batch.commit().catch(e => console.warn('Firestore saveFees failed:', e));
+  batch.commit().catch(() => {});
 }
 
 export function saveTransactions(transactions: Transaction[]) {
@@ -154,7 +167,7 @@ export function saveTransactions(transactions: Transaction[]) {
     const { id, ...data } = t;
     batch.set(doc(db, 'transactions', id), data);
   });
-  batch.commit().catch(e => console.warn('Firestore saveTransactions failed:', e));
+  batch.commit().catch(() => {});
 }
 
 export function saveEvents(events: Event[]) {
@@ -163,24 +176,24 @@ export function saveEvents(events: Event[]) {
     const { id, ...data } = ev;
     batch.set(doc(db, 'events', id), data);
   });
-  batch.commit().catch(e => console.warn('Firestore saveEvents failed:', e));
+  batch.commit().catch(() => {});
 }
 
 // ── DELETE ─────────────────────────────────────────
 
 export function deleteMemberDoc(memberId: string) {
   deleteDoc(doc(db, 'members', memberId))
-    .catch(e => console.warn('Firestore deleteMember failed:', e));
+    .catch(() => {});
 }
 
 export function deleteTransactionDoc(txId: string) {
   deleteDoc(doc(db, 'transactions', txId))
-    .catch(e => console.warn('Firestore deleteTransaction failed:', e));
+    .catch(() => {});
 }
 
 export function deleteEventDoc(eventId: string) {
   deleteDoc(doc(db, 'events', eventId))
-    .catch(e => console.warn('Firestore deleteEvent failed:', e));
+    .catch(() => {});
 }
 
 export function saveSchedules(schedules: Schedule[]) {
@@ -189,12 +202,12 @@ export function saveSchedules(schedules: Schedule[]) {
     const { id, ...data } = sc;
     batch.set(doc(db, 'schedules', id), data);
   });
-  batch.commit().catch(e => console.warn('Firestore saveSchedules failed:', e));
+  batch.commit().catch(() => {});
 }
 
 export function deleteScheduleDoc(scheduleId: string) {
   deleteDoc(doc(db, 'schedules', scheduleId))
-    .catch(e => console.warn('Firestore deleteSchedule failed:', e));
+    .catch(() => {});
 }
 
 export function saveVotingSessions(sessions: VotingSession[]) {
@@ -203,12 +216,12 @@ export function saveVotingSessions(sessions: VotingSession[]) {
     const { id, ...data } = s;
     batch.set(doc(db, 'votingSessions', id), data);
   });
-  batch.commit().catch(e => console.warn('Firestore saveVotingSessions failed:', e));
+  batch.commit().catch(() => {});
 }
 
 export function deleteVotingSessionDoc(sessionId: string) {
   deleteDoc(doc(db, 'votingSessions', sessionId))
-    .catch(e => console.warn('Firestore deleteVotingSession failed:', e));
+    .catch(() => {});
 }
 
 export function saveAnnouncements(announcements: Announcement[]) {
@@ -217,24 +230,38 @@ export function saveAnnouncements(announcements: Announcement[]) {
     const { id, ...data } = a;
     batch.set(doc(db, 'announcements', id), data);
   });
-  batch.commit().catch(e => console.warn('Firestore saveAnnouncements failed:', e));
+  batch.commit().catch(() => {});
 }
 
 export function deleteAnnouncementDoc(announcementId: string) {
   deleteDoc(doc(db, 'announcements', announcementId))
-    .catch(e => console.warn('Firestore deleteAnnouncement failed:', e));
+    .catch(() => {});
+}
+
+export function saveBoardPosts(boardPosts: BoardPost[]) {
+  const batch = writeBatch(db);
+  boardPosts.forEach(p => {
+    const { id, ...data } = p;
+    batch.set(doc(db, 'boardPosts', id), data);
+  });
+  batch.commit().catch(() => {});
+}
+
+export function deleteBoardPostDoc(boardPostId: string) {
+  deleteDoc(doc(db, 'boardPosts', boardPostId))
+    .catch(() => {});
 }
 
 export async function clearAll() {
-  const collections = ['settings', 'members', 'fees', 'transactions', 'events', 'schedules', 'votingSessions', 'announcements'];
+  const collections = ['settings', 'members', 'fees', 'transactions', 'events', 'schedules', 'votingSessions', 'announcements', 'boardPosts'];
   for (const col of collections) {
     try {
       const snap = await getDocs(collection(db, col));
       const batch = writeBatch(db);
       snap.docs.forEach(d => batch.delete(d.ref));
       await batch.commit();
-    } catch (e) {
-      console.warn('Firestore clearAll failed for', col, e);
+    } catch {
+      // silent
     }
   }
 }

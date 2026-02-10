@@ -1,19 +1,35 @@
 import { useState, useRef } from 'react';
 import { Plus, Search, Download, Pencil, Trash2, Building2, Cake, Phone, Mail, Briefcase, Lock, Eye, EyeOff } from 'lucide-react';
+import Pagination from '../ui/Pagination';
 import { useMemberStore } from '../../stores/memberStore';
 import { useFeeStore } from '../../stores/feeStore';
+import { useTransactionStore } from '../../stores/transactionStore';
+import { useEventStore } from '../../stores/eventStore';
+import { useVotingStore } from '../../stores/votingStore';
 import { useUiStore } from '../../stores/uiStore';
 import { exportMembersExcel } from '../../services/export';
 import { DEFAULT_MEMBER_PIN, MASTER_PIN } from '../../constants';
+import { BADGE_MAP, TIER_ORDER } from '../../constants/badges';
+import { useAllBadges } from '../../hooks/useBadges';
+import BadgeIcon from '../ui/BadgeIcon';
 import EmptyState from '../ui/EmptyState';
 
 export default function MembersPanel() {
   const members = useMemberStore(s => s.members);
   const { openMemberModal } = useUiStore();
   const deleteMember = useMemberStore(s => s.deleteMember);
-  const showToast = useUiStore(s => s.showToast);
+  const { showToast, openConfirmModal } = useUiStore();
   const deleteMemberFees = useFeeStore(s => s.deleteMemberFees);
+  const transactions = useTransactionStore(s => s.transactions);
+  const setTransactions = useTransactionStore(s => s.setTransactions);
+  const events = useEventStore(s => s.events);
+  const updateEvent = useEventStore(s => s.updateEvent);
+  const sessions = useVotingStore(s => s.sessions);
+  const updateSession = useVotingStore(s => s.updateSession);
+  const badgeMap = useAllBadges();
   const [query, setQuery] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 10;
 
   // PIN auth state
   const [pinAction, setPinAction] = useState<{ type: 'edit' | 'delete'; memberId: string; memberName: string } | null>(null);
@@ -23,8 +39,28 @@ export default function MembersPanel() {
   const pinRef = useRef<HTMLInputElement>(null);
 
   const filtered = members
-    .filter(m => (m.name || '').toLowerCase().includes(query.toLowerCase()) || (m.cohort || '').toLowerCase().includes(query.toLowerCase()) || (m.phone || '').includes(query))
+    .filter(m => {
+      const q = query.toLowerCase();
+      return (
+        (m.name || '').toLowerCase().includes(q) ||
+        (m.cohort || '').toLowerCase().includes(q) ||
+        (m.phone || '').includes(q) ||
+        (m.email || '').toLowerCase().includes(q) ||
+        (m.emailCompany || '').toLowerCase().includes(q) ||
+        (m.company || '').toLowerCase().includes(q)
+      );
+    })
     .sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+
+  // Pagination
+  const totalItems = filtered.length;
+  const totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE);
+  if (currentPage > totalPages && totalPages > 0) setCurrentPage(totalPages);
+
+  const paginatedMembers = filtered.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE
+  );
 
   const requestPin = (type: 'edit' | 'delete', memberId: string, memberName: string) => {
     setPinAction({ type, memberId, memberName });
@@ -48,13 +84,42 @@ export default function MembersPanel() {
     if (pinAction.type === 'edit') {
       openMemberModal(pinAction.memberId);
     } else if (pinAction.type === 'delete') {
-      if (!confirm(`${pinAction.memberName}님을 삭제하시겠습니까?`)) {
-        setPinAction(null);
-        return;
-      }
-      deleteMemberFees(pinAction.memberId);
-      deleteMember(pinAction.memberId);
-      showToast('회원이 삭제되었습니다');
+      setPinAction(null);
+      openConfirmModal({
+        title: '회원 삭제',
+        description: `${pinAction.memberName}님을 삭제하시겠습니까?`,
+        confirmLabel: '삭제',
+        confirmColor: 'red',
+        onConfirm: () => {
+          const memberId = pinAction.memberId;
+          // Clean up fees
+          deleteMemberFees(memberId);
+          // Clean up transactions with feeRef containing memberId
+          const cleanedTx = transactions.filter(t => !(t.feeRef && t.feeRef.includes(memberId)));
+          if (cleanedTx.length !== transactions.length) setTransactions(cleanedTx);
+          // Clean up event participants
+          events.forEach(ev => {
+            if (ev.participants?.includes(memberId) || ev.targetMember === memberId) {
+              updateEvent(ev.id, {
+                participants: (ev.participants || []).filter(p => p !== memberId),
+                targetMember: ev.targetMember === memberId ? '' : ev.targetMember,
+              });
+            }
+          });
+          // Clean up voting session votes
+          sessions.forEach(s => {
+            if (s.votes[memberId]) {
+              const newVotes = { ...s.votes };
+              delete newVotes[memberId];
+              updateSession(s.id, { votes: newVotes });
+            }
+          });
+          // Delete the member
+          deleteMember(memberId);
+          showToast('회원이 삭제되었습니다');
+        }
+      });
+      return;
     }
     setPinAction(null);
   };
@@ -67,7 +132,11 @@ export default function MembersPanel() {
           <span className="text-sm text-zinc-500">총 {members.length}명</span>
         </div>
         <div className="flex items-center gap-2">
-          <button onClick={() => exportMembersExcel(members)} className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-700 transition-colors">
+          <button onClick={() => {
+            if (!exportMembersExcel(members)) {
+              showToast('내보낼 데이터가 없습니다.');
+            }
+          }} className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-700 transition-colors">
             <Download className="w-3.5 h-3.5" />엑셀
           </button>
           <button onClick={() => openMemberModal()} className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold bg-navy-600 text-white hover:bg-navy-700 transition-colors">
@@ -81,7 +150,11 @@ export default function MembersPanel() {
         <input
           value={query}
           onChange={e => setQuery(e.target.value)}
-          placeholder="이름, 기수, 연락처 검색..."
+          placeholder="이름, 기수, 연락처, 이메일 검색..."
+          autoComplete="off"
+          name="member_search_input"
+          readOnly
+          onFocus={e => e.target.readOnly = false}
           className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-sm"
         />
       </div>
@@ -90,19 +163,35 @@ export default function MembersPanel() {
         <EmptyState message="등록된 회원이 없습니다." />
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          {filtered.map((m, di) => {
+          {paginatedMembers.map((m, di) => {
             const initial = (m.name || '?').charAt(0);
-            const roleColor = ['회장', '총무', '감사'].includes(m.role)
+            const roleColor = ['회장', '총무', '감사', '개발자'].includes(m.role)
               ? 'bg-navy-100 dark:bg-navy-900/30 text-navy-700 dark:text-navy-400'
               : 'bg-zinc-100 dark:bg-zinc-700 text-zinc-500 dark:text-zinc-400';
+
+            // Officer check for gold styling
+            const isOfficer = ['회장', '총무', '감사'].some(r => m.role?.includes(r));
+            const cardClass = isOfficer
+              ? "bg-white dark:bg-zinc-800 p-4 rounded-xl border border-zinc-200 dark:border-zinc-700 transition-all duration-300 hover:border-amber-400 hover:shadow-[0_0_15px_-3px_rgba(251,191,36,0.2)] hover:bg-amber-50/30 dark:hover:bg-amber-900/10 animate-fade-in"
+              : "bg-white dark:bg-zinc-800 p-4 rounded-xl border border-zinc-200 dark:border-zinc-700 card-hover animate-fade-in";
+
             return (
-              <div key={m.id} className="bg-white dark:bg-zinc-800 p-4 rounded-xl border border-zinc-200 dark:border-zinc-700 card-hover animate-fade-in" style={{ animationDelay: `${di * 30}ms` }}>
+              <div key={m.id} className={cardClass} style={{ animationDelay: `${di * 30}ms` }}>
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-3">
                     {m.avatar ? (
-                      <img src={m.avatar} alt={m.name} className="w-10 h-10 rounded-xl object-cover border border-navy-200 dark:border-navy-800" />
+                      <img
+                        src={m.avatar}
+                        alt={m.name}
+                        className={`w-10 h-10 rounded-xl object-cover ${isOfficer ? 'border-2 border-amber-400' : 'border border-navy-200 dark:border-navy-800'}`}
+                      />
                     ) : (
-                      <div className="w-10 h-10 rounded-xl bg-navy-100 dark:bg-navy-900/30 flex items-center justify-center text-sm font-bold text-navy-600 dark:text-navy-400 border border-navy-200 dark:border-navy-800">{initial}</div>
+                      <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-sm font-bold ${isOfficer
+                          ? 'bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 border-2 border-amber-400'
+                          : 'bg-navy-100 dark:bg-navy-900/30 text-navy-600 dark:text-navy-400 border border-navy-200 dark:border-navy-800'
+                        }`}>
+                        {initial}
+                      </div>
                     )}
                     <div>
                       <h4 className="font-bold text-sm">{m.name} <span className="text-[10px] font-normal text-zinc-400 ml-0.5">{m.degree || ''}</span></h4>
@@ -116,6 +205,19 @@ export default function MembersPanel() {
                 {m.phone && <p className="text-xs text-zinc-500 flex items-center gap-1.5 mb-1"><Phone className="w-3 h-3" /><a href={`tel:${m.phone.replace(/-/g, '')}`} className="hover:text-navy-600 dark:hover:text-navy-400 hover:underline">{m.phone}</a></p>}
                 {m.email && <p className="text-xs text-zinc-500 flex items-center gap-1.5 mb-1"><Mail className="w-3 h-3" /><a href={`mailto:${m.email}`} className="hover:text-navy-600 dark:hover:text-navy-400 hover:underline">{m.email}</a></p>}
                 {m.emailCompany && <p className="text-xs text-zinc-500 flex items-center gap-1.5 mb-1"><Briefcase className="w-3 h-3" /><a href={`mailto:${m.emailCompany}`} className="hover:text-navy-600 dark:hover:text-navy-400 hover:underline">{m.emailCompany}</a></p>}
+                {(() => {
+                  const ids = badgeMap.get(m.id) || [];
+                  const sorted = [...ids].sort((a, b) => (TIER_ORDER[BADGE_MAP[a].tier] ?? 9) - (TIER_ORDER[BADGE_MAP[b].tier] ?? 9));
+                  const show = sorted.slice(0, 5);
+                  const rest = sorted.length - show.length;
+                  if (show.length === 0) return null;
+                  return (
+                    <div className="flex items-center gap-1 mt-1 flex-wrap">
+                      {show.map(id => <BadgeIcon key={id} badge={BADGE_MAP[id]} size="sm" />)}
+                      {rest > 0 && <span className="text-[10px] text-zinc-400 font-semibold ml-0.5">+{rest}</span>}
+                    </div>
+                  );
+                })()}
                 <div className="flex gap-2 mt-3 pt-3 border-t border-zinc-100 dark:border-zinc-700">
                   <button onClick={() => requestPin('edit', m.id, m.name)} className="flex-1 py-1.5 text-xs font-semibold rounded-lg bg-zinc-50 dark:bg-zinc-700/50 hover:bg-zinc-100 dark:hover:bg-zinc-700 transition-colors flex items-center justify-center gap-1"><Pencil className="w-3 h-3" />수정</button>
                   <button onClick={() => requestPin('delete', m.id, m.name)} className="flex-1 py-1.5 text-xs font-semibold rounded-lg text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors flex items-center justify-center gap-1"><Trash2 className="w-3 h-3" />삭제</button>
@@ -125,6 +227,14 @@ export default function MembersPanel() {
           })}
         </div>
       )}
+
+      <Pagination
+        totalItems={totalItems}
+        itemsPerPage={ITEMS_PER_PAGE}
+        currentPage={currentPage}
+        onPageChange={setCurrentPage}
+        className="mt-4"
+      />
 
       {/* Member PIN dialog overlay */}
       {pinAction && (
@@ -148,7 +258,7 @@ export default function MembersPanel() {
                 placeholder="0000"
                 maxLength={4}
                 inputMode="numeric"
-                autoComplete="off"
+                autoComplete="new-password"
               />
               <button type="button" onClick={() => setShowPin(!showPin)} className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 transition-colors">
                 {showPin ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}

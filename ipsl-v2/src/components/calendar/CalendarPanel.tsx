@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { ChevronLeft, ChevronRight, CalendarDays, Cake, ArrowDownCircle, ArrowUpCircle, CalendarHeart, Receipt, Clock, Plus, MapPin, Pencil } from 'lucide-react';
 import { useTransactionStore } from '../../stores/transactionStore';
 import { useEventStore } from '../../stores/eventStore';
@@ -5,6 +6,7 @@ import { useScheduleStore } from '../../stores/scheduleStore';
 import { useMemberStore } from '../../stores/memberStore';
 import { useUiStore } from '../../stores/uiStore';
 import { SUPPORT_CATS, SCHEDULE_LABELS } from '../../constants';
+import { getHoliday } from '../../utils/holidays';
 import { fmt } from '../../utils/format';
 import SummaryCard from '../ui/SummaryCard';
 import type { SupportCategoryKey, Transaction, Event as IEvent, Member, Schedule } from '../../types';
@@ -22,41 +24,45 @@ export default function CalendarPanel() {
   const mm = String(calMonth + 1).padStart(2, '0');
   const prefix = `${calYear}-${mm}`;
 
-  // Gather calendar data
-  const birthdays: Record<string, string[]> = {};
-  members.forEach(m => {
-    if (!m.birthday) return;
-    const bmd = m.birthday.slice(5);
-    if (bmd.startsWith(mm + '-')) {
-      const day = String(parseInt(bmd.slice(3), 10));
-      if (!birthdays[day]) birthdays[day] = [];
-      birthdays[day].push(m.name);
-    }
-  });
+  // Gather calendar data with useMemo
+  const { birthdays, txByDay, eventsByDay, schedulesByDay } = useMemo(() => {
+    const _birthdays: Record<string, string[]> = {};
+    members.forEach(m => {
+      if (!m.birthday) return;
+      const bmd = m.birthday.slice(5);
+      if (bmd.startsWith(mm + '-')) {
+        const day = String(parseInt(bmd.slice(3), 10));
+        if (!_birthdays[day]) _birthdays[day] = [];
+        _birthdays[day].push(m.name);
+      }
+    });
 
-  const txByDay: Record<string, Transaction[]> = {};
-  transactions.forEach(tx => {
-    if (!tx.date || !tx.date.startsWith(prefix)) return;
-    const day = String(parseInt(tx.date.slice(8), 10));
-    if (!txByDay[day]) txByDay[day] = [];
-    txByDay[day].push(tx);
-  });
+    const _txByDay: Record<string, Transaction[]> = {};
+    transactions.forEach(tx => {
+      if (!tx.date || !tx.date.startsWith(prefix)) return;
+      const day = String(parseInt(tx.date.slice(8), 10));
+      if (!_txByDay[day]) _txByDay[day] = [];
+      _txByDay[day].push(tx);
+    });
 
-  const eventsByDay: Record<string, IEvent[]> = {};
-  events.forEach(ev => {
-    if (!ev.date || !ev.date.startsWith(prefix)) return;
-    const day = String(parseInt(ev.date.slice(8), 10));
-    if (!eventsByDay[day]) eventsByDay[day] = [];
-    eventsByDay[day].push(ev);
-  });
+    const _eventsByDay: Record<string, IEvent[]> = {};
+    events.forEach(ev => {
+      if (!ev.date || !ev.date.startsWith(prefix)) return;
+      const day = String(parseInt(ev.date.slice(8), 10));
+      if (!_eventsByDay[day]) _eventsByDay[day] = [];
+      _eventsByDay[day].push(ev);
+    });
 
-  const schedulesByDay: Record<string, Schedule[]> = {};
-  schedules.forEach(sc => {
-    if (!sc.date || !sc.date.startsWith(prefix)) return;
-    const day = String(parseInt(sc.date.slice(8), 10));
-    if (!schedulesByDay[day]) schedulesByDay[day] = [];
-    schedulesByDay[day].push(sc);
-  });
+    const _schedulesByDay: Record<string, Schedule[]> = {};
+    schedules.forEach(sc => {
+      if (!sc.date || !sc.date.startsWith(prefix)) return;
+      const day = String(parseInt(sc.date.slice(8), 10));
+      if (!_schedulesByDay[day]) _schedulesByDay[day] = [];
+      _schedulesByDay[day].push(sc);
+    });
+
+    return { birthdays: _birthdays, txByDay: _txByDay, eventsByDay: _eventsByDay, schedulesByDay: _schedulesByDay };
+  }, [members, transactions, events, schedules, calYear, calMonth, mm, prefix]);
 
   const firstDay = new Date(calYear, calMonth, 1).getDay();
   const daysInMonth = new Date(calYear, calMonth + 1, 0).getDate();
@@ -93,11 +99,14 @@ export default function CalendarPanel() {
     const hasEvt = !!(eventsByDay[dayKey]?.length);
     const hasSc = !!(schedulesByDay[dayKey]?.length);
 
-    if (hasBirthday || hasTx || hasEvt || hasSc) hasAnyEvent = true;
+    const holidayName = getHoliday(dateStr);
+    const isHoliday = !!holidayName;
+
+    if (hasBirthday || hasTx || hasEvt || hasSc || isHoliday) hasAnyEvent = true;
 
     let dayColor = 'text-zinc-700 dark:text-zinc-300';
-    if (dow === 0) dayColor = 'text-red-400';
-    if (dow === 6) dayColor = 'text-blue-400';
+    if (dow === 0 || isHoliday) dayColor = 'text-red-400';
+    else if (dow === 6) dayColor = 'text-blue-400';
 
     const cellBg = isToday ? 'bg-navy-50/60 dark:bg-navy-950/30' : '';
     const ring = isSelected ? 'ring-2 ring-navy-500 ring-inset' : '';
@@ -115,6 +124,11 @@ export default function CalendarPanel() {
         )}
 
         {/* Desktop: text details */}
+        {holidayName && (
+          <div className="hidden sm:block text-[10px] text-red-500 truncate mb-0.5 font-bold">
+            {holidayName}
+          </div>
+        )}
         {hasBirthday && birthdays[dayKey].map((name, i) => (
           <div key={`b-${i}`} className="hidden sm:flex items-center gap-0.5 text-[10px] text-pink-500 truncate mb-0.5" title={`${name} 생일`}>
             <Cake className="w-2.5 h-2.5 flex-shrink-0" /><span className="truncate">{name}</span>
@@ -145,6 +159,7 @@ export default function CalendarPanel() {
         {/* Mobile: colored dots */}
         {(hasBirthday || hasTx || hasEvt || hasSc) && (
           <div className="flex sm:hidden items-center gap-0.5 mt-0.5 flex-wrap">
+            {isHoliday && <span className="w-1.5 h-1.5 rounded-full bg-red-500" />}
             {hasBirthday && <span className="w-1.5 h-1.5 rounded-full bg-pink-400" />}
             {hasTx && txByDay[dayKey].some(t => t.type === 'deposit') && <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />}
             {hasTx && txByDay[dayKey].some(t => t.type === 'expense') && <span className="w-1.5 h-1.5 rounded-full bg-red-400" />}
@@ -205,9 +220,8 @@ export default function CalendarPanel() {
           {DOW_NAMES.map((name, i) => (
             <div
               key={name}
-              className={`text-center text-xs font-bold py-2 border-b border-r border-zinc-200 dark:border-zinc-700 ${
-                i === 0 ? 'text-red-400' : i === 6 ? 'text-blue-400' : 'text-zinc-500'
-              }`}
+              className={`text-center text-xs font-bold py-2 border-b border-r border-zinc-200 dark:border-zinc-700 ${i === 0 ? 'text-red-400' : i === 6 ? 'text-blue-400' : 'text-zinc-500'
+                }`}
             >
               {name}
             </div>
@@ -255,19 +269,22 @@ function CalendarDetail({ dateStr, members, transactions, events, schedules, ope
   const year = parseInt(dateStr.slice(0, 4), 10);
   const dateDisplay = `${year}년 ${month}월 ${day}일`;
   const dowDisplay = DOW_NAMES[new Date(year, month - 1, day).getDay()] + '요일';
+  const holidayName = getHoliday(dateStr);
 
   const dayBirthdays = members.filter(m => m.birthday && m.birthday.slice(5) === `${mm}-${String(day).padStart(2, '0')}`);
   const dayTx = transactions.filter(tx => tx.date === dateStr);
   const dayEvents = events.filter(ev => ev.date === dateStr);
   const daySchedules = schedules.filter(sc => sc.date === dateStr);
 
-  const isEmpty = dayBirthdays.length === 0 && dayTx.length === 0 && dayEvents.length === 0 && daySchedules.length === 0;
+  const isEmpty = !holidayName && dayBirthdays.length === 0 && dayTx.length === 0 && dayEvents.length === 0 && daySchedules.length === 0;
 
   return (
     <div className="bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl p-4 animate-fade-in">
       <div className="flex items-center justify-between mb-3">
         <h3 className="text-sm font-bold flex items-center gap-1.5">
-          <CalendarDays className="w-4 h-4 text-navy-500" />{dateDisplay} ({dowDisplay})
+          <CalendarDays className="w-4 h-4 text-navy-500" />
+          {dateDisplay} ({dowDisplay})
+          {holidayName && <span className="text-red-500 ml-1">[{holidayName}]</span>}
         </h3>
         <button
           onClick={() => openScheduleModal(null, dateStr)}

@@ -95,14 +95,14 @@ export default function MemberModal() {
     const file = e.target.files?.[0];
     if (!file) return;
     if (!file.type.startsWith('image/')) {
-      alert('이미지 파일만 선택할 수 있습니다.');
+      showToast('이미지 파일만 선택할 수 있습니다.');
       return;
     }
     try {
       const dataUrl = await resizeImage(file);
       setAvatar(dataUrl);
     } catch {
-      alert('이미지 처리에 실패했습니다.');
+      showToast('이미지 처리에 실패했습니다.');
     }
     // Reset file input
     if (fileRef.current) fileRef.current.value = '';
@@ -110,15 +110,16 @@ export default function MemberModal() {
 
   const handleSave = () => {
     const trimmed = name.trim();
-    if (!trimmed) { alert('이름은 필수입니다.'); return; }
+    if (!trimmed) { showToast('이름은 필수입니다.'); return; }
     const dupe = members.find(m => m.name === trimmed && m.id !== editMemberId);
-    if (dupe) { alert(`이미 등록된 이름입니다 (${dupe.cohort || '기수미정'}).`); return; }
+    if (dupe) { showToast(`이미 등록된 이름입니다 (${dupe.cohort || '기수미정'}).`); return; }
 
     const data = {
       name: trimmed, degree, cohort, role,
       phone: phone.trim(), email: email.trim(), emailCompany: emailCompany.trim(),
       company: company.trim(), birthday: birthday.trim(), memo: memo.trim(),
-      avatar: avatar || undefined,
+
+      ...(avatar ? { avatar } : {}),
       pin: pin || DEFAULT_MEMBER_PIN,
     };
 
@@ -193,6 +194,7 @@ export default function MemberModal() {
               placeholder="0000"
               maxLength={4}
               inputMode="numeric"
+              autoComplete="new-password"
             />
             <button
               type="button"
@@ -217,7 +219,7 @@ export default function MemberModal() {
         </div>
         <Field label="직책">
           <select value={role} onChange={e => setRole(e.target.value)} className="input-field">
-            <option>일반회원</option><option>회장</option><option>총무</option><option>감사</option>
+            <option>일반회원</option><option>회장</option><option>총무</option><option>감사</option><option>개발자</option>
           </select>
         </Field>
         <Field label="전화번호">

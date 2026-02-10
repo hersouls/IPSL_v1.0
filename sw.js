@@ -1,4 +1,4 @@
-const CACHE_VERSION = '1.0.0';
+const CACHE_VERSION = '1.0.1';
 const CACHE_NAME = `ipsl-v${CACHE_VERSION}`;
 
 const CORE_ASSETS = [
@@ -37,8 +37,14 @@ self.addEventListener('install', (event) => {
         }
       });
       await Promise.allSettled(cdnPromises);
-    }).then(() => self.skipWaiting())
+    })
   );
+});
+
+self.addEventListener('message', (event) => {
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
 });
 
 // ---- ACTIVATE ----

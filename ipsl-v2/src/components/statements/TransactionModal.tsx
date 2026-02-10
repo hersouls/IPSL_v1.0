@@ -16,7 +16,7 @@ const CAT_ICONS: Record<string, React.ReactNode> = {
 };
 
 export default function TransactionModal() {
-  const { txModalOpen, editTxId, closeTxModal, showToast } = useUiStore();
+  const { txModalOpen, editTxId, closeTxModal, showToast, openConfirmModal } = useUiStore();
   const transactions = useTransactionStore(s => s.transactions);
   const addTransaction = useTransactionStore(s => s.addTransaction);
   const updateTransaction = useTransactionStore(s => s.updateTransaction);
@@ -65,8 +65,8 @@ export default function TransactionModal() {
 
   const handleSave = () => {
     const amt = parseFmt(amount);
-    if (amt <= 0) { alert('금액을 입력하세요.'); return; }
-    if (!date) { alert('날짜를 선택하세요.'); return; }
+    if (amt <= 0) { showToast('금액을 입력하세요.'); return; }
+    if (!date) { showToast('날짜를 선택하세요.'); return; }
 
     const data = {
       type,
@@ -93,11 +93,21 @@ export default function TransactionModal() {
     const warnings: string[] = [];
     if (hasFeeRef) warnings.push('연결된 회비 납부 기록도 함께 삭제됩니다.');
     if (hasEventId) warnings.push('연결된 지원 내역도 함께 삭제됩니다.');
-    const msg = '이 내역을 삭제하시겠습니까?' + (warnings.length ? '\n\n' + warnings.join('\n') : '');
-    if (!confirm(msg)) return;
-    deleteTransaction(editTxId);
-    closeTxModal();
-    showToast('내역이 삭제되었습니다');
+    const description = warnings.length
+      ? '이 내역을 삭제하시겠습니까?\n\n' + warnings.join('\n')
+      : '이 내역을 삭제하시겠습니까?';
+
+    openConfirmModal({
+      title: '내역 삭제',
+      description,
+      confirmLabel: '삭제',
+      confirmColor: 'red',
+      onConfirm: () => {
+        deleteTransaction(editTxId);
+        closeTxModal();
+        showToast('내역이 삭제되었습니다');
+      }
+    });
   };
 
   if (!txModalOpen) return null;

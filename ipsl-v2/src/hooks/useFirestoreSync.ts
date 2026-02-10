@@ -10,6 +10,7 @@ import { useEventStore } from '../stores/eventStore';
 import { useScheduleStore } from '../stores/scheduleStore';
 import { useVotingStore } from '../stores/votingStore';
 import { useAnnouncementStore } from '../stores/announcementStore';
+import { useBoardPostStore } from '../stores/boardPostStore';
 import { useUiStore } from '../stores/uiStore';
 import { DEFAULT_MEMBER_PIN } from '../constants';
 
@@ -33,7 +34,8 @@ export function useFirestoreSync() {
           data.events.length > 0 ||
           data.schedules.length > 0 ||
           data.votingSessions.length > 0 ||
-          data.announcements.length > 0;
+          data.announcements.length > 0 ||
+          data.boardPosts.length > 0;
 
         if (hasFirestoreData) {
           useSettingsStore.getState().setSettings(data.settings);
@@ -44,12 +46,12 @@ export function useFirestoreSync() {
           useScheduleStore.getState().setSchedules(data.schedules);
           useVotingStore.getState().setSessions(data.votingSessions);
           useAnnouncementStore.getState().setAnnouncements(data.announcements);
+          useBoardPostStore.getState().setBoardPosts(data.boardPosts);
         } else {
           // Auto-migrate localStorage → Firestore if Firestore is empty
           const settingsDoc = await getDoc(doc(db, 'settings', 'config'));
           const localMembers = useMemberStore.getState().members;
           if (!settingsDoc.exists() && localMembers.length > 0) {
-            console.log('localStorage → Firestore migration');
             firestoreSync.saveSettings(useSettingsStore.getState().settings);
             firestoreSync.saveMembers(localMembers);
             firestoreSync.saveFees(useFeeStore.getState().fees);
@@ -58,6 +60,7 @@ export function useFirestoreSync() {
             firestoreSync.saveSchedules(useScheduleStore.getState().schedules);
             firestoreSync.saveVotingSessions(useVotingStore.getState().sessions);
             firestoreSync.saveAnnouncements(useAnnouncementStore.getState().announcements);
+            firestoreSync.saveBoardPosts(useBoardPostStore.getState().boardPosts);
             showToast('클라우드 동기화가 완료되었습니다');
           }
         }
@@ -69,9 +72,8 @@ export function useFirestoreSync() {
         // Migrate transactions
         migrateTransactions();
 
-        console.log('Firestore 동기화 완료');
-      } catch (err) {
-        console.warn('Firestore 백그라운드 동기화 실패:', err);
+      } catch {
+        // Firestore sync failed silently
       }
     })();
   }, [showToast]);

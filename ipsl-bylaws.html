@@ -15,6 +15,8 @@
   <title>IPSL 대학원 졸업생 모임 - 회칙 및 운영 관리</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+  <!-- Daum Postcode -->
+  <script src="https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
   <!-- Firebase SDK (v9 compat) -->
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
@@ -1566,8 +1568,32 @@
         <!-- Location -->
         <div>
           <label class="block text-xs font-semibold text-zinc-500 mb-1.5 ml-1">장소</label>
-          <input type="text" id="evLocation" placeholder="장소를 입력하세요" onkeydown="if(event.key==='Enter') saveEvent()"
-            class="w-full px-4 py-3 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-navy-500 focus:border-navy-500 transition-all">
+          <div class="flex gap-2">
+            <input type="text" id="evLocation" placeholder="장소를 입력하세요" onkeydown="if(event.key==='Enter') saveEvent()"
+              class="w-full px-4 py-3 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-navy-500 focus:border-navy-500 transition-all">
+            <button onclick="openDaumPostcode()"
+              class="px-4 py-2 bg-navy-600 text-white text-sm font-semibold rounded-xl hover:bg-navy-700 transition-colors whitespace-nowrap flex items-center gap-1"><i
+                data-lucide="search" class="w-4 h-4"></i>검색</button>
+          </div>
+        </div>
+        <!-- Photo -->
+        <div>
+          <label class="block text-xs font-semibold text-zinc-500 mb-1.5 ml-1">사진 첨부</label>
+          <div class="flex items-center gap-3">
+            <input type="file" id="evPhoto" accept="image/*" class="hidden" onchange="handlePhotoChange(this)">
+            <button onclick="document.getElementById('evPhoto').click()"
+              class="flex items-center gap-2 px-4 py-2.5 bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl text-sm font-medium hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors text-zinc-600 dark:text-zinc-300">
+              <i data-lucide="image-plus" class="w-4 h-4"></i>사진 추가
+            </button>
+            <div id="evPhotoPreviewContainer"
+              class="hidden relative w-12 h-12 rounded-lg overflow-hidden border border-zinc-200 dark:border-zinc-700 group">
+              <img id="evPhotoPreview" class="w-full h-full object-cover">
+              <button onclick="removeEvPhoto()"
+                class="absolute top-0 right-0 p-0.5 bg-black/50 text-white hover:bg-red-500 transition-colors rounded-bl-md"><i
+                  data-lucide="x" class="w-3 h-3"></i></button>
+            </div>
+            <span id="evPhotoName" class="text-xs text-zinc-400 truncate max-w-[150px]"></span>
+          </div>
         </div>
         <!-- Amount -->
         <div>
@@ -1602,6 +1628,24 @@
     class="fixed bottom-6 left-1/2 -translate-x-1/2 bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 px-4 py-2.5 rounded-xl shadow-lg z-[70] flex items-center gap-2 transform translate-y-20 opacity-0 transition-all duration-300 border border-zinc-700 dark:border-zinc-300">
     <i data-lucide="check-circle-2" class="w-4 h-4 text-emerald-400"></i>
     <span id="toastMsg" class="text-sm font-semibold pr-1">완료!</span>
+  </div>
+
+  <!-- ====== UPDATE TOAST ====== -->
+  <div id="updateToast"
+    class="fixed bottom-6 right-6 bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 p-4 rounded-xl shadow-2xl z-[80] hidden flex flex-col gap-3 min-w-[280px] border border-zinc-700 dark:border-zinc-300 animate-slide-up">
+    <div class="flex items-start gap-3">
+      <div class="p-2 bg-zinc-800 dark:bg-zinc-200 rounded-lg">
+        <i data-lucide="download-cloud" class="w-5 h-5 text-emerald-400 dark:text-emerald-600"></i>
+      </div>
+      <div>
+        <p class="text-sm font-bold">새로운 버전이 있습니다</p>
+        <p class="text-xs text-zinc-400 dark:text-zinc-500 mt-0.5">최신 기능을 반영하려면 업데이트하세요.</p>
+      </div>
+    </div>
+    <button id="updateBtn"
+      class="w-full py-2 bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold rounded-lg transition-colors">
+      지금 업데이트
+    </button>
   </div>
 
   <!-- ====== FOOTER ====== -->
@@ -3135,6 +3179,7 @@
                             </div>
                             <p class="text-sm font-bold mt-1">${ev.title || '(제목 없음)'}</p>
                             ${ev.location ? `<p class="text-xs text-zinc-500 flex items-center gap-1.5 mt-1"><i data-lucide="map-pin" class="w-3 h-3"></i>${ev.location}</p>` : ''}
+                            ${ev.photo ? `<div class="mt-2"><img src="${ev.photo}" class="h-20 w-auto rounded-lg object-cover border border-zinc-200 dark:border-zinc-700" onclick="window.open(this.src)"></div>` : ''}
                             ${detailHtml}
                             ${ev.memo ? `<p class="text-xs text-zinc-400 mt-1">${ev.memo}</p>` : ''}
                         </div>
@@ -3253,6 +3298,17 @@
         document.getElementById('evLocation').value = ev.location || '';
         document.getElementById('evAmount').value = ev.amount ? ev.amount.toLocaleString() : '';
         document.getElementById('evMemo').value = ev.memo || '';
+
+        // Photo
+        currentEvPhotoBase64 = ev.photo || null;
+        if (currentEvPhotoBase64) {
+          document.getElementById('evPhotoPreview').src = currentEvPhotoBase64;
+          document.getElementById('evPhotoPreviewContainer').classList.remove('hidden');
+          document.getElementById('evPhotoName').textContent = '저장된 사진';
+        } else {
+          removeEvPhoto();
+        }
+
         // Check participants
         (ev.participants || []).forEach(pid => {
           const cb = document.querySelector(`.ev-participant-cb[value="${pid}"]`);
@@ -3266,6 +3322,7 @@
         document.getElementById('evLocation').value = '';
         document.getElementById('evAmount').value = '';
         document.getElementById('evMemo').value = '';
+        removeEvPhoto();
       }
       updateEvCatSelector();
       setEvCategory(evCategory);
@@ -3284,6 +3341,91 @@
       editEventIdx = -1;
     }
 
+    let currentEvPhotoBase64 = null;
+
+    function openDaumPostcode() {
+      new daum.Postcode({
+        oncomplete: function (data) {
+          let addr = data.address;
+          if (data.buildingName) addr += ' (' + data.buildingName + ')';
+          document.getElementById('evLocation').value = addr;
+        }
+      }).open();
+    }
+
+
+
+    function compressImage(file, maxWidth, quality, callback) {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = event => {
+        const img = new Image();
+        img.src = event.target.result;
+        img.onload = () => {
+          let width = img.width;
+          let height = img.height;
+          if (width > maxWidth) {
+            height = Math.round(height * (maxWidth / width));
+            width = maxWidth;
+          }
+          const canvas = document.createElement('canvas');
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, width, height);
+
+          // Recursive compression if > 100KB (approx)
+          // Base64 length * 0.75 ~= bytes. 100KB = 102400 bytes. ~136533 chars.
+          let q = quality;
+          let dataUrl = canvas.toDataURL('image/jpeg', q);
+
+          // Simple loop to ensure < 100KB if possible, down to 0.1 quality
+          while (dataUrl.length > 137000 && q > 0.1) {
+            q -= 0.1;
+            dataUrl = canvas.toDataURL('image/jpeg', q);
+          }
+          callback(dataUrl);
+        };
+      };
+    }
+
+    function handlePhotoChange(input) {
+      const file = input.files[0];
+      if (!file) return;
+
+      // Removed 3MB check because we compress anyway.
+      // But acts as a sanity check for extremely large files
+      if (file.size > 1024 * 1024 * 10) {
+        alert('파일이 너무 큽니다. 10MB 이하의 이미지를 선택해주세요.');
+        input.value = '';
+        return;
+      }
+
+      showToast('이미지 압축 중...');
+
+      // Target: Max 800px width, 0.5 quality (50%)
+      compressImage(file, 800, 0.5, (base64) => {
+        const kb = Math.round((base64.length * 0.75) / 1024);
+        if (kb > 150) {
+          alert(`이미지 압축 후에도 용량이 큽니다 (${kb}KB). 더 작은 이미지를 사용해주세요.`);
+          return;
+        }
+
+        currentEvPhotoBase64 = base64;
+        document.getElementById('evPhotoPreview').src = currentEvPhotoBase64;
+        document.getElementById('evPhotoPreviewContainer').classList.remove('hidden');
+        document.getElementById('evPhotoName').innerHTML = file.name + `<br><span class="text-[10px] text-emerald-500 font-bold">압축됨: ${kb}KB</span>`;
+        showToast(`이미지가 ${kb}KB로 압축되었습니다.`);
+      });
+    }
+
+    function removeEvPhoto() {
+      currentEvPhotoBase64 = null;
+      document.getElementById('evPhoto').value = '';
+      document.getElementById('evPhotoPreviewContainer').classList.add('hidden');
+      document.getElementById('evPhotoName').textContent = '';
+    }
+
     function saveEvent() {
       const title = document.getElementById('evTitle').value.trim();
       if (!title) { alert('제목/사유를 입력하세요.'); return; }
@@ -3295,6 +3437,10 @@
       const participants = [];
       if (evCategory === 'smallGathering' || evCategory === 'annualEvent') {
         document.querySelectorAll('.ev-participant-cb:checked').forEach(cb => participants.push(cb.value));
+        if (evCategory === 'smallGathering' && participants.length < 3) {
+          alert('소모임 지원은 참석자가 최소 3명 이상이어야 합니다.');
+          return;
+        }
       }
 
       const data = {
@@ -3306,6 +3452,7 @@
         participants,
         amount,
         memo: document.getElementById('evMemo').value.trim(),
+        photo: currentEvPhotoBase64
       };
 
       if (editEventIdx >= 0) {
@@ -3619,9 +3766,39 @@
   </script>
   <script>
     if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('/sw.js')
-        .then(reg => console.log('[PWA] SW registered, scope:', reg.scope))
-        .catch(err => console.warn('[PWA] SW registration failed:', err));
+      let newWorker;
+
+      function showUpdateToast() {
+        const t = document.getElementById('updateToast');
+        t.classList.remove('hidden');
+        lucide.createIcons();
+      }
+
+      document.getElementById('updateBtn').addEventListener('click', () => {
+        if (newWorker) newWorker.postMessage({ type: 'SKIP_WAITING' });
+      });
+
+      navigator.serviceWorker.register('/sw.js').then(reg => {
+        reg.addEventListener('updatefound', () => {
+          newWorker = reg.installing;
+          newWorker.addEventListener('statechange', () => {
+            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+              showUpdateToast();
+            }
+          });
+        });
+        if (reg.waiting) {
+          newWorker = reg.waiting;
+          showUpdateToast();
+        }
+      }).catch(err => console.warn('[PWA] SW registration failed:', err));
+
+      let refreshing;
+      navigator.serviceWorker.addEventListener('controllerchange', () => {
+        if (refreshing) return;
+        window.location.reload();
+        refreshing = true;
+      });
     }
   </script>
 </body>

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Modal from '../ui/Modal';
 import { useEventStore } from '../../stores/eventStore';
 import { useTransactionStore } from '../../stores/transactionStore';
@@ -7,8 +7,9 @@ import { useSettingsStore } from '../../stores/settingsStore';
 import { useUiStore } from '../../stores/uiStore';
 import { SUPPORT_CATS } from '../../constants';
 import { fmt, fmtInputValue, parseFmt } from '../../utils/format';
-import { Heart, UsersRound, CalendarHeart, GraduationCap } from 'lucide-react';
+import { Heart, UsersRound, CalendarHeart, GraduationCap, ChevronDown } from 'lucide-react';
 import type { SupportCategoryKey } from '../../types';
+import MemberAvatar from '../ui/MemberAvatar';
 
 const CAT_ICONS: Record<string, React.ReactNode> = {
   heart: <Heart className="w-3 h-3" />,
@@ -18,7 +19,7 @@ const CAT_ICONS: Record<string, React.ReactNode> = {
 };
 
 export default function EventModal() {
-  const { eventModalOpen, editEventId, closeEventModal, showToast } = useUiStore();
+  const { eventModalOpen, editEventId, closeEventModal, showToast, openConfirmModal } = useUiStore();
   const events = useEventStore(s => s.events);
   const addEvent = useEventStore(s => s.addEvent);
   const updateEvent = useEventStore(s => s.updateEvent);
@@ -41,9 +42,22 @@ export default function EventModal() {
   const [participants, setParticipants] = useState<string[]>([]);
   const [amount, setAmount] = useState('');
   const [memo, setMemo] = useState('');
+  const [targetDropdownOpen, setTargetDropdownOpen] = useState(false);
+  const targetDropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (targetDropdownRef.current && !targetDropdownRef.current.contains(e.target as Node)) {
+        setTargetDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   useEffect(() => {
     if (eventModalOpen) {
+      setTargetDropdownOpen(false);
       if (existing) {
         setCategory((existing.category as SupportCategoryKey) || 'condolence');
         setDate(existing.date || '');
@@ -109,10 +123,10 @@ export default function EventModal() {
   };
 
   const handleSave = () => {
-    if (!title.trim()) { alert('제목/사유를 입력하세요.'); return; }
+    if (!title.trim()) { showToast('제목/사유를 입력하세요.'); return; }
     const amt = parseFmt(amount);
-    if (amt <= 0) { alert('금액을 입력하세요.'); return; }
-    if (!date) { alert('날짜를 선택하세요.'); return; }
+    if (amt <= 0) { showToast('금액을 입력하세요.'); return; }
+    if (!date) { showToast('날짜를 선택하세요.'); return; }
 
     const evParticipants = (category === 'smallGathering' || category === 'annualEvent') ? participants : [];
 
@@ -166,13 +180,21 @@ export default function EventModal() {
 
   const handleDelete = () => {
     if (!existing) return;
-    if (!confirm((existing.title || '이 내역') + '을(를) 삭제하시겠습니까?\n연결된 거래내역도 함께 삭제됩니다.')) return;
-    if (existing.txId) {
-      deleteTransaction(existing.txId);
-    }
-    deleteEvent(existing.id);
-    closeEventModal();
-    showToast('지원 내역이 삭제되었습니다');
+
+    openConfirmModal({
+      title: '지원 내역 삭제',
+      description: `${existing.title || '이 내역'}을(를) 삭제하시겠습니까?\n연결된 거래내역도 함께 삭제됩니다.`,
+      confirmLabel: '삭제',
+      confirmColor: 'red',
+      onConfirm: () => {
+        if (existing.txId) {
+          deleteTransaction(existing.txId);
+        }
+        deleteEvent(existing.id);
+        closeEventModal();
+        showToast('지원 내역이 삭제되었습니다');
+      }
+    });
   };
 
   if (!eventModalOpen) return null;
@@ -214,12 +236,48 @@ export default function EventModal() {
         {/* Target member (condolence only) */}
         {category === 'condolence' && (
           <Field label="대상 회원">
-            <select value={targetMember} onChange={e => setTargetMember(e.target.value)} className="input-field">
-              <option value="">선택하세요</option>
-              {members.map(m => (
-                <option key={m.id} value={m.id}>{m.name}{m.cohort ? ` (${m.cohort})` : ''}</option>
-              ))}
-            </select>
+            <div className="relative" ref={targetDropdownRef}>
+              <button
+                type="button"
+                onClick={() => setTargetDropdownOpen(!targetDropdownOpen)}
+                className={`input-field w-full flex items-center gap-2 text-left ${!targetMember ? 'text-zinc-400' : ''}`}
+              >
+                {(() => {
+                  const tm = members.find(m => m.id === targetMember);
+                  if (tm) return (
+                    <>
+                      <MemberAvatar name={tm.name} avatar={tm.avatar} size="sm" />
+                      <span className="truncate flex-1">{tm.name}{tm.cohort ? ` (${tm.cohort})` : ''}</span>
+                    </>
+                  );
+                  return <span className="flex-1">선택하세요</span>;
+                })()}
+                <ChevronDown className={`w-3.5 h-3.5 text-zinc-400 flex-shrink-0 transition-transform ${targetDropdownOpen ? 'rotate-180' : ''}`} />
+              </button>
+              {targetDropdownOpen && (
+                <div className="absolute z-20 left-0 right-0 mt-1 max-h-48 overflow-y-auto rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 shadow-lg">
+                  <button
+                    type="button"
+                    onClick={() => { setTargetMember(''); setTargetDropdownOpen(false); }}
+                    className="w-full px-3 py-2 text-xs text-left text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-700"
+                  >
+                    선택 안 함
+                  </button>
+                  {members.map(m => (
+                    <button
+                      key={m.id}
+                      type="button"
+                      onClick={() => { setTargetMember(m.id); setTargetDropdownOpen(false); }}
+                      className={`w-full flex items-center gap-2 px-3 py-2 text-xs text-left transition-colors ${targetMember === m.id ? 'bg-navy-50 dark:bg-navy-900/30 text-navy-700 dark:text-navy-300' : 'text-zinc-700 dark:text-zinc-200 hover:bg-zinc-50 dark:hover:bg-zinc-700'}`}
+                    >
+                      <MemberAvatar name={m.name} avatar={m.avatar} size="sm" />
+                      <span className="truncate">{m.name}</span>
+                      {m.cohort && <span className="text-[10px] text-zinc-400 flex-shrink-0">{m.cohort}</span>}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
           </Field>
         )}
 
@@ -235,6 +293,7 @@ export default function EventModal() {
                     onChange={() => toggleParticipant(m.id)}
                     className="rounded border-zinc-300 dark:border-zinc-600 text-navy-600 focus:ring-navy-500"
                   />
+                  <MemberAvatar name={m.name} avatar={m.avatar} size="sm" />
                   <span className="text-sm">{m.name}</span>
                   <span className="text-[10px] text-zinc-400">{m.cohort || ''}</span>
                 </label>

@@ -29,6 +29,8 @@ export const STORAGE_KEYS = {
   schedules: 'ipsl_schedules',
   votingSessions: 'ipsl_votingSessions',
   announcements: 'ipsl_announcements',
+  boardPosts: 'ipsl_boardPosts',
+  lastCheckedAt: 'ipsl_lastCheckedAt',
 } as const;
 
 export const DEFAULT_SETTINGS_PIN = '9876';

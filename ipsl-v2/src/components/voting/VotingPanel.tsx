@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
-import { Plus, Lock, Eye, EyeOff, CheckCircle2, XCircle, Clock, CalendarClock } from 'lucide-react';
+import { Plus, Lock, Eye, EyeOff, CheckCircle2, XCircle, Clock, CalendarClock, Search } from 'lucide-react';
+import MemberAvatar from '../ui/MemberAvatar';
 import { useVotingStore } from '../../stores/votingStore';
 import { useMemberStore } from '../../stores/memberStore';
 import { useUiStore } from '../../stores/uiStore';
@@ -36,9 +37,21 @@ export default function VotingPanel() {
   const [pinError, setPinError] = useState(false);
   const [showPin, setShowPin] = useState(false);
   const pinRef = useRef<HTMLInputElement>(null);
+  const [query, setQuery] = useState('');
 
   const openSessions = sessions.filter(s => s.status === 'open');
   const closedSessions = sessions.filter(s => s.status === 'closed');
+
+  const filteredOpen = openSessions.filter(s => {
+    if (!query) return true;
+    const q = query.toLowerCase();
+    return s.title.toLowerCase().includes(q) || (s.description || '').toLowerCase().includes(q);
+  });
+  const filteredClosed = closedSessions.filter(s => {
+    if (!query) return true;
+    const q = query.toLowerCase();
+    return s.title.toLowerCase().includes(q) || (s.description || '').toLowerCase().includes(q);
+  });
 
   const requestPin = (type: 'create' | 'close' | 'delete', sessionId?: string) => {
     setPinAction({ type, sessionId });
@@ -79,20 +92,32 @@ export default function VotingPanel() {
         </button>
       </div>
 
+      {/* Search input */}
+      <div className="relative mb-5">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
+        <input
+          value={query}
+          onChange={e => setQuery(e.target.value)}
+          placeholder="안건 검색..."
+          autoComplete="off"
+          className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-sm"
+        />
+      </div>
+
       {/* Summary */}
       <div className="grid grid-cols-2 gap-3 mb-5">
         <SummaryCard label="진행 중" value={String(openSessions.length)} unit="건" />
         <SummaryCard label="완료" value={String(closedSessions.length)} unit="건" />
       </div>
 
-      {sessions.length === 0 && <EmptyState message="등록된 안건이 없습니다" />}
+      {filteredOpen.length === 0 && filteredClosed.length === 0 && <EmptyState message="등록된 안건이 없습니다" />}
 
       {/* Open sessions */}
-      {openSessions.length > 0 && (
+      {filteredOpen.length > 0 && (
         <section className="mb-6">
           <h3 className="text-xs font-bold text-zinc-500 uppercase tracking-wider mb-3">진행 중</h3>
           <div className="space-y-3">
-            {openSessions.map(s => (
+            {filteredOpen.map(s => (
               <SessionCard key={s.id} session={s} members={members} onVote={() => openVoteAuthModal(s.id)} onClose={() => requestPin('close', s.id)} onDelete={() => requestPin('delete', s.id)} />
             ))}
           </div>
@@ -100,11 +125,11 @@ export default function VotingPanel() {
       )}
 
       {/* Closed sessions */}
-      {closedSessions.length > 0 && (
+      {filteredClosed.length > 0 && (
         <section>
           <h3 className="text-xs font-bold text-zinc-500 uppercase tracking-wider mb-3">완료</h3>
           <div className="space-y-3">
-            {closedSessions.map(s => (
+            {filteredClosed.map(s => (
               <SessionCard key={s.id} session={s} members={members} onDelete={() => requestPin('delete', s.id)} />
             ))}
           </div>
@@ -151,7 +176,7 @@ function SessionCard({
   session, members, onVote, onClose, onDelete,
 }: {
   session: VotingSession;
-  members: { id: string; name: string }[];
+  members: { id: string; name: string; avatar?: string }[];
   onVote?: () => void;
   onClose?: () => void;
   onDelete?: () => void;
@@ -287,7 +312,7 @@ function SessionCard({
   );
 }
 
-function VotedMemberList({ session, members }: { session: VotingSession; members: { id: string; name: string }[] }) {
+function VotedMemberList({ session, members }: { session: VotingSession; members: { id: string; name: string; avatar?: string }[] }) {
   const [expanded, setExpanded] = useState(false);
   const voteEntries = Object.entries(session.votes);
 
@@ -311,7 +336,10 @@ function VotedMemberList({ session, members }: { session: VotingSession; members
           const isAuto = (session.autoApproved || []).includes(mid);
           return (
             <div key={mid} className={`flex items-center justify-between text-[11px] px-2 py-1 rounded-lg bg-zinc-50 dark:bg-zinc-700/50 ${isAuto ? 'opacity-60' : ''}`}>
-              <span className="font-medium text-zinc-700 dark:text-zinc-300">{m?.name || '(탈퇴 회원)'}</span>
+              <span className="font-medium text-zinc-700 dark:text-zinc-300 flex items-center gap-1.5">
+                <MemberAvatar name={m?.name || '?'} avatar={m?.avatar} size="xs" />
+                {m?.name || '(탈퇴 회원)'}
+              </span>
               <span className={`font-bold ${
                 choice === 'approve' ? 'text-emerald-600 dark:text-emerald-400' :
                 choice === 'reject' ? 'text-red-500 dark:text-red-400' :
@@ -323,7 +351,10 @@ function VotedMemberList({ session, members }: { session: VotingSession; members
         {/* Non-voters (only shown for open sessions — closed sessions have auto-approve) */}
         {members.filter(m => !session.votes[m.id]).map(m => (
           <div key={m.id} className="flex items-center justify-between text-[11px] px-2 py-1 rounded-lg bg-zinc-50 dark:bg-zinc-700/50 opacity-50">
-            <span className="font-medium text-zinc-500">{m.name}</span>
+            <span className="font-medium text-zinc-500 flex items-center gap-1.5">
+              <MemberAvatar name={m.name} avatar={m.avatar} size="xs" />
+              {m.name}
+            </span>
             <span className="text-zinc-400">미투표</span>
           </div>
         ))}

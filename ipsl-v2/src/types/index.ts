@@ -53,11 +53,25 @@ export interface Settings {
   teachersDay: number;
 }
 
-export type TabId = 'announcements' | 'bylaws' | 'members' | 'fees' | 'support' | 'statements' | 'calendar' | 'voting';
+export type TabId = 'announcements' | 'bylaws' | 'members' | 'fees' | 'support' | 'statements' | 'calendar' | 'voting' | 'board';
 
 export interface AnnouncementAttachment {
   name: string;
   dataUrl: string;
+}
+
+export interface Comment {
+  id: string;
+  author: string;
+  password: string;
+  content: string;
+  createdAt: string;
+}
+
+export interface Reaction {
+  emoji: string;
+  count: number;
+  users: string[]; // user names
 }
 
 export interface Announcement {
@@ -66,8 +80,24 @@ export interface Announcement {
   content: string;
   author: string;
   location: string;
+  link: string;
   attachments: AnnouncementAttachment[];
   pinned: boolean;
+  comments?: Comment[];
+  reactions?: Reaction[];
+  createdAt: string;
+}
+
+export interface BoardPost {
+  id: string;
+  title: string;
+  content: string;
+  author: string;
+  location: string;
+  link: string;
+  memo: string;
+  comments?: Comment[];
+  reactions?: Reaction[];
   createdAt: string;
 }
 
@@ -116,4 +146,26 @@ export interface RevisionEntry {
   editor: string;
   summary: string;
   details: string[];
+}
+
+// Badge system
+export type BadgeTier = 'bronze' | 'silver' | 'gold' | 'special';
+
+export type BadgeId =
+  | 'first-payment' | 'streak-3' | 'streak-6' | 'perfect-year' | 'early-bird' | 'super-early'
+  | 'profile-basic' | 'profile-complete' | 'avatar-set'
+  | 'first-post' | 'active-writer' | 'first-comment' | 'announcer' | 'prolific'
+  | 'first-vote' | 'perfect-voter'
+  | 'first-event' | 'social' | 'all-rounder'
+  | 'mvp' | 'officer';
+
+export type BadgeCategory = 'fee' | 'profile' | 'community' | 'voting' | 'event' | 'composite';
+
+export interface BadgeDef {
+  id: BadgeId;
+  name: string;
+  description: string;
+  icon: string;
+  tier: BadgeTier;
+  category: BadgeCategory;
 }

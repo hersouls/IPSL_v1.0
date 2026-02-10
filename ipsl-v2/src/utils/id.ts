@@ -21,3 +21,7 @@ export function votingSessionId(): string {
 export function announcementId(): string {
   return 'an_' + (Date.now() + 4);
 }
+
+export function boardPostId(): string {
+  return 'bp_' + (Date.now() + 5);
+}

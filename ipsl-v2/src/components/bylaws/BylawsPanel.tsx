@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import {
   List, Users, Wallet, Heart, UsersRound, CalendarHeart, GraduationCap,
   PiggyBank, Eye, FileEdit, Clock, RefreshCw, Crown, Briefcase, ShieldCheck,
@@ -43,29 +43,41 @@ export default function BylawsPanel() {
   ];
   const budgetTotal = budgetItems.reduce((s, i) => s + i.amount, 0);
 
-  // Execution
-  const yearTx = transactions.filter(tx => tx.date?.startsWith(budgetYear));
-  const totalDeposits = yearTx.filter(t => t.type === 'deposit').reduce((s, t) => s + t.amount, 0);
-  const totalExpenses = yearTx.filter(t => t.type === 'expense').reduce((s, t) => s + t.amount, 0);
-  const totalRate = totalBudget > 0 ? Math.round(totalExpenses / totalBudget * 100) : 0;
+  // Execution with useMemo
+  const { totalDeposits, totalExpenses, totalRate, catData, reserveUsed, reserveBudget, reserveRate } = useMemo(() => {
+    const yearTx = transactions.filter(tx => tx.date?.startsWith(budgetYear));
+    const deposits = yearTx.filter(t => t.type === 'deposit').reduce((s, t) => s + t.amount, 0);
+    const expenses = yearTx.filter(t => t.type === 'expense').reduce((s, t) => s + t.amount, 0);
+    const rate = totalBudget > 0 ? Math.round(expenses / totalBudget * 100) : 0;
 
-  const cats: { key: SupportCategoryKey; label: string; icon: string }[] = [
-    { key: 'condolence', label: '경조사 화환', icon: 'heart' },
-    { key: 'smallGathering', label: '소규모 모임', icon: 'users-round' },
-    { key: 'annualEvent', label: '홈커밍데이', icon: 'calendar-heart' },
-    { key: 'teachersDay', label: '스승의 날', icon: 'graduation-cap' },
-  ];
+    const cats: { key: SupportCategoryKey; label: string; icon: string }[] = [
+      { key: 'condolence', label: '경조사 화환', icon: 'heart' },
+      { key: 'smallGathering', label: '소규모 모임', icon: 'users-round' },
+      { key: 'annualEvent', label: '홈커밍데이', icon: 'calendar-heart' },
+      { key: 'teachersDay', label: '스승의 날', icon: 'graduation-cap' },
+    ];
 
-  const catData = cats.map(c => {
-    const budgetAmt = getCatBudget(c.key, settings);
-    const spent = yearTx.filter(t => t.type === 'expense' && t.category === c.key).reduce((s, t) => s + t.amount, 0);
-    const rate = budgetAmt > 0 ? Math.round(spent / budgetAmt * 100) : 0;
-    return { ...c, budget: budgetAmt, spent, rate };
-  });
+    const _catData = cats.map(c => {
+      const budgetAmt = getCatBudget(c.key, settings);
+      const spent = yearTx.filter(t => t.type === 'expense' && t.category === c.key).reduce((s, t) => s + t.amount, 0);
+      const r = budgetAmt > 0 ? Math.round(spent / budgetAmt * 100) : 0;
+      return { ...c, budget: budgetAmt, spent, rate: r };
+    });
 
-  const reserveUsed = catData.reduce((s, c) => s + Math.max(0, c.spent - c.budget), 0);
-  const reserveBudget = Math.max(0, reserve);
-  const reserveRate = reserveBudget > 0 ? Math.round(reserveUsed / reserveBudget * 100) : 0;
+    const _reserveUsed = _catData.reduce((s, c) => s + Math.max(0, c.spent - c.budget), 0);
+    const _reserveBudget = Math.max(0, reserve);
+    const _reserveRate = _reserveBudget > 0 ? Math.round(_reserveUsed / _reserveBudget * 100) : 0;
+
+    return {
+      totalDeposits: deposits,
+      totalExpenses: expenses,
+      totalRate: rate,
+      catData: _catData,
+      reserveUsed: _reserveUsed,
+      reserveBudget: _reserveBudget,
+      reserveRate: _reserveRate,
+    };
+  }, [transactions, budgetYear, totalBudget, settings, reserve]);
 
   const cy = new Date().getFullYear();
   const yearOptions = [];

@@ -1,5 +1,6 @@
-import { useState } from 'react';
-import { Plus, Heart, UsersRound, CalendarHeart, GraduationCap, Pencil, Trash2, MapPin, User, Users } from 'lucide-react';
+import { useState, useMemo } from 'react';
+import { Plus, Heart, UsersRound, CalendarHeart, GraduationCap, Pencil, Trash2, MapPin, User, Users, Search } from 'lucide-react';
+import MemberAvatar from '../ui/MemberAvatar';
 import { useEventStore } from '../../stores/eventStore';
 import { useTransactionStore } from '../../stores/transactionStore';
 import { useMemberStore } from '../../stores/memberStore';
@@ -34,15 +35,26 @@ export default function SupportPanel() {
   const transactions = useTransactionStore(s => s.transactions);
   const members = useMemberStore(s => s.members);
   const settings = useSettingsStore(s => s.settings);
-  const { openEventModal, showToast } = useUiStore();
+  const { openEventModal, showToast, openConfirmModal } = useUiStore();
 
   const [year, setYear] = useState(String(new Date().getFullYear()));
   const [currentCat, setCurrentCat] = useState<SupportCategoryKey>('condolence');
+  const [query, setQuery] = useState('');
 
   const catInfo = SUPPORT_CATS[currentCat];
-  const catEvents = events
-    .filter(ev => ev.category === currentCat && ev.date?.startsWith(year))
-    .sort((a, b) => b.date.localeCompare(a.date));
+  const catEvents = useMemo(() => {
+    return events
+      .filter(ev => ev.category === currentCat && ev.date?.startsWith(year))
+      .filter(ev => {
+        if (!query) return true;
+        const q = query.toLowerCase();
+        const memberName = ev.targetMember ? members.find(m => m.id === ev.targetMember)?.name || '' : '';
+        return (ev.title || '').toLowerCase().includes(q) ||
+          memberName.toLowerCase().includes(q) ||
+          (ev.location || '').toLowerCase().includes(q);
+      })
+      .sort((a, b) => b.date.localeCompare(a.date));
+  }, [events, currentCat, year, query, members]);
 
   const totalAmount = catEvents.reduce((s, ev) => s + ev.amount, 0);
   const budget = getCatBudget(currentCat, settings);
@@ -51,13 +63,21 @@ export default function SupportPanel() {
   const handleDelete = (evId: string) => {
     const ev = events.find(e => e.id === evId);
     if (!ev) return;
-    if (!confirm((ev.title || '이 내역') + '을(를) 삭제하시겠습니까?\n연결된 거래내역도 함께 삭제됩니다.')) return;
-    if (ev.txId) {
-      const tx = transactions.find(t => t.id === ev.txId);
-      if (tx) deleteTransaction(tx.id);
-    }
-    deleteEvent(evId);
-    showToast('지원 내역이 삭제되었습니다');
+
+    openConfirmModal({
+      title: '지원 내역 삭제',
+      description: `${ev.title || '이 내역'}을(를) 삭제하시겠습니까?\n연결된 거래내역도 함께 삭제됩니다.`,
+      confirmLabel: '삭제',
+      confirmColor: 'red',
+      onConfirm: () => {
+        if (ev.txId) {
+          const tx = transactions.find(t => t.id === ev.txId);
+          if (tx) deleteTransaction(tx.id);
+        }
+        deleteEvent(evId);
+        showToast('지원 내역이 삭제되었습니다');
+      }
+    });
   };
 
   return (
@@ -93,6 +113,18 @@ export default function SupportPanel() {
         })}
       </div>
 
+      {/* Search input */}
+      <div className="relative">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
+        <input
+          value={query}
+          onChange={e => setQuery(e.target.value)}
+          placeholder="제목, 대상, 장소 검색..."
+          autoComplete="off"
+          className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-sm"
+        />
+      </div>
+
       {/* Summary cards */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         <SummaryCard label="건수" value={String(catEvents.length)} unit="건" />
@@ -113,9 +145,9 @@ export default function SupportPanel() {
         <div className="space-y-3">
           {catEvents.map(ev => {
             const member = ev.targetMember ? members.find(m => m.id === ev.targetMember) : null;
-            const participantNames = (ev.participants || []).map(pid => {
+            const participantMembers = (ev.participants || []).map(pid => {
               const pm = members.find(m => m.id === pid);
-              return pm ? pm.name : '(삭제됨)';
+              return pm || { id: pid, name: '(삭제됨)' } as typeof members[0];
             });
 
             return (
@@ -141,17 +173,25 @@ export default function SupportPanel() {
                       )}
                       {ev.category === 'condolence' && member && (
                         <p className="text-xs text-zinc-500 flex items-center gap-1.5 mt-1">
-                          <User className="w-3 h-3" />대상: {member.name}{member.cohort ? ` (${member.cohort})` : ''}
+                          <User className="w-3 h-3" />대상: <MemberAvatar name={member.name} avatar={member.avatar} size="xs" /> {member.name}{member.cohort ? ` (${member.cohort})` : ''}
                         </p>
                       )}
-                      {(ev.category === 'smallGathering' || ev.category === 'annualEvent') && participantNames.length > 0 && (
+                      {(ev.category === 'smallGathering' || ev.category === 'annualEvent') && participantMembers.length > 0 && (
                         <>
-                          <p className="text-xs text-zinc-500 flex items-center gap-1.5 mt-1">
-                            <Users className="w-3 h-3" />참석자: {participantNames.join(', ')} ({participantNames.length}명)
-                          </p>
-                          {ev.category === 'smallGathering' && participantNames.length > 0 && (
+                          <div className="text-xs text-zinc-500 flex items-center gap-1.5 mt-1 flex-wrap">
+                            <Users className="w-3 h-3 flex-shrink-0" />
+                            <span className="flex-shrink-0">참석자:</span>
+                            {participantMembers.slice(0, 5).map(pm => (
+                              <span key={pm.id} className="inline-flex items-center gap-0.5">
+                                <MemberAvatar name={pm.name} avatar={pm.avatar} size="xs" />{pm.name}
+                              </span>
+                            ))}
+                            {participantMembers.length > 5 && <span className="text-zinc-400">+{participantMembers.length - 5}명</span>}
+                            <span>({participantMembers.length}명)</span>
+                          </div>
+                          {ev.category === 'smallGathering' && participantMembers.length > 0 && (
                             <p className="text-[11px] text-zinc-400 ml-[18px]">
-                              {participantNames.length}명 x {fmt(settings.smallGathering)}원 = {fmt(participantNames.length * settings.smallGathering)}원
+                              {participantMembers.length}명 x {fmt(settings.smallGathering)}원 = {fmt(participantMembers.length * settings.smallGathering)}원
                             </p>
                           )}
                         </>

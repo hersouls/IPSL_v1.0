@@ -1,27 +1,27 @@
 import { useState, useRef } from 'react';
-import { Plus, Pin, Lock, Eye, EyeOff, Pencil, Trash2, ChevronDown, ChevronUp, MapPin, Paperclip, Download, Link2, Search } from 'lucide-react';
+import { Plus, ChevronDown, ChevronUp, MapPin, Link2, StickyNote, Pencil, Trash2, Search, Lock, Eye, EyeOff } from 'lucide-react';
 import Pagination from '../ui/Pagination';
 import CommentSection from '../ui/CommentSection';
 import ReactionPicker from '../ui/ReactionPicker';
-import { useAnnouncementStore } from '../../stores/announcementStore';
+import { useBoardPostStore } from '../../stores/boardPostStore';
 import { useMemberStore } from '../../stores/memberStore';
 import { useUiStore } from '../../stores/uiStore';
 import { STORAGE_KEYS, DEFAULT_SETTINGS_PIN, MASTER_PIN } from '../../constants';
-import type { Announcement, Member } from '../../types';
+import type { BoardPost, Member } from '../../types';
 import EmptyState from '../ui/EmptyState';
 
 function getPin(): string {
   return localStorage.getItem(STORAGE_KEYS.settingsPin) || DEFAULT_SETTINGS_PIN;
 }
 
-export default function AnnouncementsPanel() {
-  const announcements = useAnnouncementStore(s => s.announcements);
-  const deleteAnnouncement = useAnnouncementStore(s => s.deleteAnnouncement);
-  const addComment = useAnnouncementStore(s => s.addComment);
-  const deleteComment = useAnnouncementStore(s => s.deleteComment);
-  const toggleReaction = useAnnouncementStore(s => s.toggleReaction);
+export default function BoardPanel() {
+  const boardPosts = useBoardPostStore(s => s.boardPosts);
+  const deleteBoardPost = useBoardPostStore(s => s.deleteBoardPost);
+  const addComment = useBoardPostStore(s => s.addComment);
+  const deleteComment = useBoardPostStore(s => s.deleteComment);
+  const toggleReaction = useBoardPostStore(s => s.toggleReaction);
   const members = useMemberStore(s => s.members);
-  const { openAnnouncementModal, showToast } = useUiStore();
+  const { openBoardPostModal, showToast, openConfirmModal } = useUiStore();
 
   // PIN dialog
   const [pinAction, setPinAction] = useState<{ type: 'create' | 'edit' | 'delete'; id?: string } | null>(null);
@@ -33,20 +33,14 @@ export default function AnnouncementsPanel() {
   const [currentPage, setCurrentPage] = useState(1);
   const ITEMS_PER_PAGE = 10;
 
+  const sorted = [...boardPosts].sort((a, b) => b.createdAt.localeCompare(a.createdAt));
 
-
-  // Sort: pinned first, then newest
-  const sorted = [...announcements].sort((a, b) => {
-    if (a.pinned !== b.pinned) return a.pinned ? -1 : 1;
-    return b.createdAt.localeCompare(a.createdAt);
-  });
-
-  const filtered = sorted.filter(a => {
+  const filtered = sorted.filter(p => {
     if (!query) return true;
     const q = query.toLowerCase();
-    return (a.title || '').toLowerCase().includes(q) ||
-      (a.content || '').toLowerCase().includes(q) ||
-      (a.author || '').toLowerCase().includes(q);
+    return (p.title || '').toLowerCase().includes(q) ||
+      (p.content || '').toLowerCase().includes(q) ||
+      (p.author || '').toLowerCase().includes(q);
   });
 
   // Pagination
@@ -54,7 +48,7 @@ export default function AnnouncementsPanel() {
   const totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE);
   if (currentPage > totalPages && totalPages > 0) setCurrentPage(totalPages);
 
-  const paginatedAnnouncements = filtered.slice(
+  const paginatedPosts = filtered.slice(
     (currentPage - 1) * ITEMS_PER_PAGE,
     currentPage * ITEMS_PER_PAGE
   );
@@ -77,28 +71,38 @@ export default function AnnouncementsPanel() {
     if (!pinAction) return;
 
     if (pinAction.type === 'create') {
-      openAnnouncementModal();
+      openBoardPostModal();
     } else if (pinAction.type === 'edit' && pinAction.id) {
-      openAnnouncementModal(pinAction.id);
+      openBoardPostModal(pinAction.id);
     } else if (pinAction.type === 'delete' && pinAction.id) {
-      deleteAnnouncement(pinAction.id);
-      showToast('공지가 삭제되었습니다');
+      const id = pinAction.id;
+      setPinAction(null);
+      openConfirmModal({
+        title: '게시글 삭제',
+        description: '이 게시글을 삭제하시겠습니까?',
+        confirmLabel: '삭제',
+        confirmColor: 'red',
+        onConfirm: () => {
+          deleteBoardPost(id);
+          showToast('게시글이 삭제되었습니다');
+        }
+      });
+      return;
     }
     setPinAction(null);
   };
 
   return (
     <main className="max-w-4xl mx-auto px-5 py-6 flex-1 w-full">
-      {/* Header */}
       <div className="flex items-center justify-between mb-5">
-        <h2 className="text-lg font-black text-zinc-900 dark:text-zinc-100">공지사항</h2>
+        <h2 className="text-lg font-black text-zinc-900 dark:text-zinc-100">게시판</h2>
         <button onClick={() => requestPin('create')} className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold bg-navy-600 text-white hover:bg-navy-700 transition-colors">
-          <Plus className="w-3.5 h-3.5" /> 새 공지 등록
+          <Plus className="w-3.5 h-3.5" /> 새 글 작성
         </button>
       </div>
 
       {/* Search input */}
-      <div className="relative mb-4">
+      <div className="relative mb-5">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
         <input
           value={query}
@@ -109,23 +113,30 @@ export default function AnnouncementsPanel() {
         />
       </div>
 
-      {filtered.length === 0 && <EmptyState message="등록된 공지사항이 없습니다" />}
+      {filtered.length === 0 && <EmptyState message="등록된 게시글이 없습니다" />}
 
-      {/* List */}
       <div className="space-y-3">
-        {paginatedAnnouncements.map(a => (
-          <AnnouncementCard
-            key={a.id}
-            announcement={a}
+        {paginatedPosts.map(post => (
+          <BoardPostCard
+            key={post.id}
+            post={post}
             members={members}
-            onEdit={() => requestPin('edit', a.id)}
-            onDelete={() => requestPin('delete', a.id)}
-            onAddComment={(c) => addComment(a.id, c)}
-            onDeleteComment={(cid) => deleteComment(a.id, cid)}
-            onToggleReaction={(emoji, userName) => toggleReaction(a.id, emoji, userName)}
+            onEdit={() => requestPin('edit', post.id)}
+            onDelete={() => requestPin('delete', post.id)}
+            onAddComment={(c) => addComment(post.id, c)}
+            onDeleteComment={(cid) => deleteComment(post.id, cid)}
+            onToggleReaction={(emoji, userName) => toggleReaction(post.id, emoji, userName)}
           />
         ))}
       </div>
+
+      <Pagination
+        totalItems={totalItems}
+        itemsPerPage={ITEMS_PER_PAGE}
+        currentPage={currentPage}
+        onPageChange={setCurrentPage}
+        className="mt-4"
+      />
 
       {/* PIN dialog */}
       {pinAction && (
@@ -163,8 +174,8 @@ export default function AnnouncementsPanel() {
   );
 }
 
-function AnnouncementCard({
-  announcement: a,
+function BoardPostCard({
+  post: p,
   members,
   onEdit,
   onDelete,
@@ -172,7 +183,7 @@ function AnnouncementCard({
   onDeleteComment,
   onToggleReaction,
 }: {
-  announcement: Announcement;
+  post: BoardPost;
   members: Member[];
   onEdit: () => void;
   onDelete: () => void;
@@ -181,8 +192,8 @@ function AnnouncementCard({
   onToggleReaction: (emoji: string, userName: string) => void;
 }) {
   const [expanded, setExpanded] = useState(false);
-  const dateStr = a.createdAt ? new Date(a.createdAt).toLocaleDateString('ko-KR', { month: 'numeric', day: 'numeric' }) : '';
-  const rawAuthor = a.author || '';
+  const dateStr = p.createdAt ? new Date(p.createdAt).toLocaleDateString('ko-KR', { month: 'numeric', day: 'numeric' }) : '';
+  const rawAuthor = p.author || '';
   const cleanAuthor = rawAuthor.replace(/^(작성자[:\s]*)/, '').trim();
   const authorMember = cleanAuthor ? members.find(m => m.name === cleanAuthor) : null;
 
@@ -207,64 +218,43 @@ function AnnouncementCard({
     <div className="bg-white dark:bg-zinc-800 rounded-2xl border border-zinc-200 dark:border-zinc-700 p-4 shadow-sm">
       {/* Header row */}
       <div className="flex items-start justify-between gap-2 mb-1">
-        <div className="flex items-center gap-2 min-w-0">
-          {a.pinned && (
-            <span className="flex-shrink-0 px-1.5 py-0.5 rounded-md text-[10px] font-bold bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 flex items-center gap-0.5">
-              <Pin className="w-2.5 h-2.5" /> 고정
-            </span>
-          )}
-          <h4 className="text-sm font-bold text-zinc-900 dark:text-zinc-100 truncate">{a.title}</h4>
-        </div>
+        <h4 className="text-sm font-bold text-zinc-900 dark:text-zinc-100 truncate">{p.title}</h4>
         <span className="text-[11px] text-zinc-400 flex-shrink-0">{dateStr}</span>
       </div>
 
       {/* Content preview / expanded */}
-      <button
-        type="button"
-        onClick={() => setExpanded(!expanded)}
-        className="w-full text-left"
-      >
+      <button type="button" onClick={() => setExpanded(!expanded)} className="w-full text-left">
         {expanded ? (
-          <p className="text-xs text-zinc-600 dark:text-zinc-300 whitespace-pre-wrap mb-2">{a.content}</p>
+          <p className="text-xs text-zinc-600 dark:text-zinc-300 whitespace-pre-wrap mb-2">{p.content}</p>
         ) : (
-          <p className="text-xs text-zinc-500 dark:text-zinc-400 line-clamp-2 mb-2">{a.content || '(내용 없음)'}</p>
+          <p className="text-xs text-zinc-500 dark:text-zinc-400 line-clamp-2 mb-2">{p.content || '(내용 없음)'}</p>
         )}
       </button>
 
-      {/* Expanded details: location + attachments */}
+      {/* Expanded details */}
       {expanded && (
         <div className="space-y-2 mb-2">
-          {a.location && (
+          {p.location && (
             <div className="flex items-center gap-1.5 text-[11px] text-zinc-500 dark:text-zinc-400">
               <MapPin className="w-3 h-3 flex-shrink-0" />
-              <span>{a.location}</span>
+              <span>{p.location}</span>
             </div>
           )}
-          {a.link && (
+          {p.link && (
             <a
-              href={a.link}
+              href={p.link}
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center gap-1.5 text-[11px] text-navy-600 dark:text-navy-400 font-semibold hover:underline"
             >
               <Link2 className="w-3 h-3 flex-shrink-0" />
-              <span className="truncate">{a.link}</span>
+              <span className="truncate">{p.link}</span>
             </a>
           )}
-          {a.attachments && a.attachments.length > 0 && (
-            <div className="space-y-1">
-              {a.attachments.map((att, i) => (
-                <a
-                  key={i}
-                  href={att.dataUrl}
-                  download={att.name}
-                  className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-zinc-50 dark:bg-zinc-700/50 border border-zinc-200 dark:border-zinc-600 text-xs text-navy-600 dark:text-navy-400 font-semibold hover:bg-navy-50 dark:hover:bg-navy-950/30 transition-colors"
-                >
-                  <Paperclip className="w-3 h-3 flex-shrink-0" />
-                  <span className="truncate flex-1">{att.name}</span>
-                  <Download className="w-3 h-3 flex-shrink-0" />
-                </a>
-              ))}
+          {p.memo && (
+            <div className="flex items-start gap-1.5 text-[11px] text-zinc-500 dark:text-zinc-400">
+              <StickyNote className="w-3 h-3 flex-shrink-0 mt-0.5" />
+              <span className="whitespace-pre-wrap">{p.memo}</span>
             </div>
           )}
         </div>
@@ -274,7 +264,7 @@ function AnnouncementCard({
       <div className="flex items-center justify-between mt-3">
         <div className="flex flex-col gap-2">
           <div className="flex items-center gap-3">
-            {a.author && (
+            {p.author && (
               <span className="text-[11px] text-zinc-400 flex items-center gap-1.5">
                 {authorMember?.avatar ? (
                   <img src={authorMember.avatar} alt={cleanAuthor} className="w-5 h-5 rounded-md object-cover" />
@@ -283,12 +273,7 @@ function AnnouncementCard({
                     {cleanAuthor.charAt(0)}
                   </div>
                 )}
-                {a.author}
-              </span>
-            )}
-            {!expanded && a.attachments && a.attachments.length > 0 && (
-              <span className="text-[10px] text-zinc-400 flex items-center gap-0.5">
-                <Paperclip className="w-2.5 h-2.5" />{a.attachments.length}
+                {p.author}
               </span>
             )}
             <button
@@ -302,7 +287,7 @@ function AnnouncementCard({
 
           {/* Reactions */}
           <ReactionPicker
-            reactions={a.reactions}
+            reactions={p.reactions}
             onToggle={handleToggleReaction}
             myUserName={myUserName}
           />
@@ -321,7 +306,7 @@ function AnnouncementCard({
       {/* Comments */}
       {expanded && (
         <CommentSection
-          comments={a.comments}
+          comments={p.comments}
           members={members.map(m => ({ name: m.name, avatar: m.avatar })).sort((a, b) => a.name.localeCompare(b.name))}
           onAddComment={onAddComment}
           onDeleteComment={onDeleteComment}

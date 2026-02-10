@@ -22,7 +22,7 @@ function savePin(pin: string) {
 }
 
 export default function SettingsModal() {
-  const { settingsModalOpen, closeSettingsModal, showToast } = useUiStore();
+  const { settingsModalOpen, closeSettingsModal, showToast, openConfirmModal } = useUiStore();
   const settings = useSettingsStore(s => s.settings);
   const setSettings = useSettingsStore(s => s.setSettings);
   const members = useMemberStore(s => s.members);
@@ -95,15 +95,15 @@ export default function SettingsModal() {
 
   const handleChangePin = () => {
     if (!newPin.trim()) {
-      alert('새 비밀번호를 입력하세요.');
+      showToast('새 비밀번호를 입력하세요.');
       return;
     }
     if (newPin.length < 4) {
-      alert('비밀번호는 4자리 이상이어야 합니다.');
+      showToast('비밀번호는 4자리 이상이어야 합니다.');
       return;
     }
     if (newPin !== newPinConfirm) {
-      alert('비밀번호가 일치하지 않습니다.');
+      showToast('비밀번호가 일치하지 않습니다.');
       return;
     }
     savePin(newPin);
@@ -136,15 +136,9 @@ export default function SettingsModal() {
     showToast('Excel 파일이 생성되었습니다');
   };
 
-  const handleImport = async () => {
-    if (!fileRef.current?.files?.length) {
-      alert('파일을 선택하세요.');
-      return;
-    }
-    if (!confirm('현재 데이터를 백업 파일로 교체합니다. 진행하시겠습니까?')) return;
-
+  const doImport = async () => {
     try {
-      const data = await parseImportFile(fileRef.current.files[0]);
+      const data = await parseImportFile(fileRef.current!.files![0]);
       if (data.settings) setSettings({ ...DEFAULT_SETTINGS, ...data.settings });
       if (data.members) setMembers(data.members);
       if (data.fees) setFees(data.fees);
@@ -154,28 +148,48 @@ export default function SettingsModal() {
       showToast('데이터가 복원되었습니다');
       closeSettingsModal();
     } catch {
-      alert('파일 형식이 올바르지 않습니다.');
+      showToast('파일 형식이 올바르지 않습니다.');
     }
   };
 
-  const handleClearAll = async () => {
-    if (!confirm('⚠️ 모든 데이터를 삭제합니다.\n이 작업은 되돌릴 수 없습니다.')) return;
-    if (!confirm('정말로 모든 데이터를 삭제하시겠습니까?')) return;
+  const handleImport = async () => {
+    if (!fileRef.current?.files?.length) {
+      showToast('파일을 선택하세요.');
+      return;
+    }
 
-    setSettings({ ...DEFAULT_SETTINGS });
-    setMembers([]);
-    setFees({});
-    setTransactions([]);
-    setEvents([]);
-    setSchedules([]);
-
-    Object.values(STORAGE_KEYS).forEach(key => {
-      if (key !== STORAGE_KEYS.darkMode && key !== STORAGE_KEYS.settingsPin) localStorage.removeItem(key);
+    openConfirmModal({
+      title: '데이터 복원',
+      description: '현재 데이터를 백업 파일로 교체합니다.\n이 작업은 되돌릴 수 없습니다.',
+      confirmLabel: '복원',
+      confirmColor: 'navy',
+      onConfirm: () => { doImport(); }
     });
+  };
 
-    sync.clearAll();
-    closeSettingsModal();
-    showToast('모든 데이터가 삭제되었습니다');
+  const handleClearAll = async () => {
+    openConfirmModal({
+      title: '전체 데이터 삭제',
+      description: '⚠️ 모든 데이터를 삭제합니다.\n이 작업은 되돌릴 수 없습니다.\n\n정말로 모든 데이터를 삭제하시겠습니까?',
+      confirmLabel: '전체 삭제',
+      confirmColor: 'red',
+      onConfirm: () => {
+        setSettings({ ...DEFAULT_SETTINGS });
+        setMembers([]);
+        setFees({});
+        setTransactions([]);
+        setEvents([]);
+        setSchedules([]);
+
+        Object.values(STORAGE_KEYS).forEach(key => {
+          if (key !== STORAGE_KEYS.darkMode && key !== STORAGE_KEYS.settingsPin) localStorage.removeItem(key);
+        });
+
+        sync.clearAll();
+        closeSettingsModal();
+        showToast('모든 데이터가 삭제되었습니다');
+      }
+    });
   };
 
   return (

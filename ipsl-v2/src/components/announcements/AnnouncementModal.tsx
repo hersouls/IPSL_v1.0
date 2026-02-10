@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Paperclip, X, MapPin, ChevronDown } from 'lucide-react';
+import { Paperclip, X, MapPin, ChevronDown, Link2 } from 'lucide-react';
 import Modal from '../ui/Modal';
 import { useAnnouncementStore } from '../../stores/announcementStore';
 import { useMemberStore } from '../../stores/memberStore';
@@ -22,6 +22,7 @@ export default function AnnouncementModal() {
   const [content, setContent] = useState('');
   const [author, setAuthor] = useState('');
   const [location, setLocation] = useState('');
+  const [link, setLink] = useState('');
   const [attachments, setAttachments] = useState<AnnouncementAttachment[]>([]);
   const [pinned, setPinned] = useState(false);
   const [authorOpen, setAuthorOpen] = useState(false);
@@ -37,6 +38,7 @@ export default function AnnouncementModal() {
         setContent(existing.content);
         setAuthor(existing.author);
         setLocation(existing.location || '');
+        setLink(existing.link || '');
         setAttachments(existing.attachments || []);
         setPinned(existing.pinned);
       } else {
@@ -44,6 +46,7 @@ export default function AnnouncementModal() {
         setContent('');
         setAuthor('');
         setLocation('');
+        setLink('');
         setAttachments([]);
         setPinned(false);
       }
@@ -69,7 +72,7 @@ export default function AnnouncementModal() {
 
     for (const file of Array.from(files)) {
       if (file.size > MAX_FILE_SIZE) {
-        alert(`"${file.name}" 파일이 2MB를 초과합니다.`);
+        showToast(`"${file.name}" 파일이 2MB를 초과합니다.`);
         continue;
       }
       const dataUrl = await readFileAsDataUrl(file);
@@ -85,13 +88,14 @@ export default function AnnouncementModal() {
 
   const handleSave = () => {
     const trimmed = title.trim();
-    if (!trimmed) { alert('제목을 입력하세요.'); return; }
+    if (!trimmed) { showToast('제목을 입력하세요.'); return; }
 
     const data = {
       title: trimmed,
       content: content.trim(),
       author: author.trim(),
       location: location.trim(),
+      link: link.trim(),
       attachments,
       pinned,
     };
@@ -120,7 +124,14 @@ export default function AnnouncementModal() {
         <Field label="장소">
           <div className="relative">
             <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
-            <input value={location} onChange={e => setLocation(e.target.value)} className="input-field pl-9" placeholder="장소를 입력하세요" />
+            <input value={location} onChange={e => setLocation(e.target.value)} className="input-field !pl-10" placeholder="장소를 입력하세요" />
+          </div>
+        </Field>
+
+        <Field label="링크 URL">
+          <div className="relative">
+            <Link2 className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
+            <input value={link} onChange={e => setLink(e.target.value)} className="input-field !pl-10" placeholder="https://example.com" type="url" />
           </div>
         </Field>
 
@@ -143,9 +154,8 @@ export default function AnnouncementModal() {
                     key={m.id}
                     type="button"
                     onClick={() => { setAuthor(m.name); setAuthorOpen(false); }}
-                    className={`w-full text-left px-3 py-2.5 text-sm hover:bg-zinc-50 dark:hover:bg-zinc-700 transition-colors flex items-center gap-2 ${
-                      author === m.name ? 'bg-navy-50 dark:bg-navy-950/50 text-navy-700 dark:text-navy-400 font-semibold' : ''
-                    }`}
+                    className={`w-full text-left px-3 py-2.5 text-sm hover:bg-zinc-50 dark:hover:bg-zinc-700 transition-colors flex items-center gap-2 ${author === m.name ? 'bg-navy-50 dark:bg-navy-950/50 text-navy-700 dark:text-navy-400 font-semibold' : ''
+                      }`}
                   >
                     {m.avatar ? (
                       <img src={m.avatar} alt={m.name} className="w-6 h-6 rounded-md object-cover flex-shrink-0" />

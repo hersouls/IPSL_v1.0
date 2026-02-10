@@ -7,11 +7,11 @@ import { SCHEDULE_LABELS } from '../../constants';
 import type { ScheduleLabel } from '../../types';
 
 const LABEL_ICONS: Record<string, React.ReactNode> = {
-  meeting:     <Users className="w-3.5 h-3.5" />,
-  workshop:    <Presentation className="w-3.5 h-3.5" />,
-  conference:  <MessageSquare className="w-3.5 h-3.5" />,
+  meeting: <Users className="w-3.5 h-3.5" />,
+  workshop: <Presentation className="w-3.5 h-3.5" />,
+  conference: <MessageSquare className="w-3.5 h-3.5" />,
   anniversary: <PartyPopper className="w-3.5 h-3.5" />,
-  custom:      <CalendarPlus className="w-3.5 h-3.5" />,
+  custom: <CalendarPlus className="w-3.5 h-3.5" />,
 };
 
 const LABEL_KEYS = Object.keys(SCHEDULE_LABELS) as ScheduleLabel[];
@@ -22,7 +22,7 @@ function todayStr() {
 }
 
 export default function ScheduleModal() {
-  const { scheduleModalOpen, editScheduleId, scheduleModalDate, closeScheduleModal, showToast } = useUiStore();
+  const { scheduleModalOpen, editScheduleId, scheduleModalDate, closeScheduleModal, showToast, openConfirmModal } = useUiStore();
   const calSelectedDate = useUiStore(s => s.calSelectedDate);
   const schedules = useScheduleStore(s => s.schedules);
   const addSchedule = useScheduleStore(s => s.addSchedule);
@@ -64,8 +64,8 @@ export default function ScheduleModal() {
 
   const handleSave = () => {
     const trimmed = title.trim();
-    if (!trimmed) { alert('제목을 입력하세요.'); return; }
-    if (!date) { alert('날짜를 선택하세요.'); return; }
+    if (!trimmed) { showToast('제목을 입력하세요.'); return; }
+    if (!date) { showToast('날짜를 선택하세요.'); return; }
 
     const data = {
       title: trimmed,
@@ -89,10 +89,18 @@ export default function ScheduleModal() {
 
   const handleDelete = () => {
     if (!editScheduleId) return;
-    if (!confirm(`"${existing?.title}" 일정을 삭제하시겠습니까?`)) return;
-    deleteSchedule(editScheduleId);
-    showToast('일정이 삭제되었습니다');
-    closeScheduleModal();
+
+    openConfirmModal({
+      title: '일정 삭제',
+      description: `"${existing?.title}" 일정을 삭제하시겠습니까?`,
+      confirmLabel: '삭제',
+      confirmColor: 'red',
+      onConfirm: () => {
+        deleteSchedule(editScheduleId);
+        showToast('일정이 삭제되었습니다');
+        closeScheduleModal();
+      }
+    });
   };
 
   const placeholders: Record<ScheduleLabel, string> = {
@@ -116,11 +124,10 @@ export default function ScheduleModal() {
                 key={k}
                 type="button"
                 onClick={() => setLabel(k)}
-                className={`flex items-center justify-center gap-1 py-2 px-1.5 rounded-lg text-[11px] font-bold transition-colors ${
-                  active
+                className={`flex items-center justify-center gap-1 py-2 px-1.5 rounded-lg text-[11px] font-bold transition-colors ${active
                     ? 'bg-violet-100 dark:bg-violet-900/30 text-violet-700 dark:text-violet-300 ring-2 ring-violet-400'
                     : 'bg-zinc-100 dark:bg-zinc-700 text-zinc-500 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-600'
-                }`}
+                  }`}
               >
                 {LABEL_ICONS[k]}
                 <span className="truncate">{info.label}</span>
@@ -148,8 +155,7 @@ export default function ScheduleModal() {
 
         <Field label="장소">
           <div className="relative">
-            <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-zinc-400" />
-            <input value={location} onChange={e => setLocation(e.target.value)} className="input-field pl-9" placeholder="장소를 입력하세요" />
+            <input value={location} onChange={e => setLocation(e.target.value)} className="input-field !pl-10" placeholder="장소를 입력하세요" />
           </div>
         </Field>
 

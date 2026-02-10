@@ -1,7 +1,10 @@
+import { useState, useCallback, useRef, useEffect } from 'react';
 import {
-  Megaphone, ScrollText, Users, Wallet, HandHeart, FileBarChart, CalendarDays, Vote, Settings, Sun, Moon,
+  Megaphone, ScrollText, Users, Wallet, HandHeart, FileBarChart, CalendarDays, Vote, MessageSquare, Settings, Sun, Moon, Bell,
 } from 'lucide-react';
 import { useUiStore } from '../../stores/uiStore';
+import { useNotifications } from '../../hooks/useNotifications';
+import NotificationPanel from './NotificationPanel';
 import type { TabId } from '../../types';
 import clsx from 'clsx';
 
@@ -14,6 +17,7 @@ const tabs: { id: TabId; label: string; icon: React.ReactNode }[] = [
   { id: 'statements', label: '회비 내역서', icon: <FileBarChart className="w-3.5 h-3.5" /> },
   { id: 'calendar', label: '캘린더', icon: <CalendarDays className="w-3.5 h-3.5" /> },
   { id: 'voting', label: '투표', icon: <Vote className="w-3.5 h-3.5" /> },
+  { id: 'board', label: '게시판', icon: <MessageSquare className="w-3.5 h-3.5" /> },
 ];
 
 export default function TabNav() {
@@ -22,6 +26,31 @@ export default function TabNav() {
   const openSettingsModal = useUiStore(s => s.openSettingsModal);
   const isDark = useUiStore(s => s.isDark);
   const toggleDark = useUiStore(s => s.toggleDark);
+
+  const { notifications, unreadCount, markAsRead } = useNotifications();
+  const [panelOpen, setPanelOpen] = useState(false);
+  const bellWrapperRef = useRef<HTMLDivElement>(null);
+
+  const togglePanel = useCallback(() => {
+    setPanelOpen(prev => {
+      if (!prev) markAsRead();
+      return !prev;
+    });
+  }, [markAsRead]);
+
+  const closePanel = useCallback(() => setPanelOpen(false), []);
+
+  // Outside click to close panel
+  useEffect(() => {
+    if (!panelOpen) return;
+    const handler = (e: MouseEvent) => {
+      if (bellWrapperRef.current && !bellWrapperRef.current.contains(e.target as Node)) {
+        setPanelOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [panelOpen]);
 
   return (
     <nav className="sticky top-0 z-50 glass no-print">
@@ -45,6 +74,24 @@ export default function TabNav() {
             ))}
           </div>
           <div className="flex items-center gap-1">
+            {/* Bell / Notification */}
+            <div className="relative" ref={bellWrapperRef}>
+              <button
+                onClick={togglePanel}
+                className="p-2 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors flex-shrink-0"
+                title="알림"
+              >
+                <Bell className="w-4 h-4 text-zinc-500 dark:text-zinc-400" />
+                {unreadCount > 0 && (
+                  <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] flex items-center justify-center rounded-full bg-red-500 text-white text-[10px] font-bold leading-none px-1">
+                    {unreadCount > 99 ? '99+' : unreadCount}
+                  </span>
+                )}
+              </button>
+              {panelOpen && (
+                <NotificationPanel notifications={notifications} onClose={closePanel} />
+              )}
+            </div>
             <button
               onClick={openSettingsModal}
               className="p-2 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors flex-shrink-0"

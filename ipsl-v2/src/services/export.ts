@@ -3,8 +3,8 @@ import type { Member, Transaction, Event as IEvent, Fees, Settings, Schedule } f
 import { MONTHS, SUPPORT_CATS, SCHEDULE_LABELS } from '../constants';
 import type { SupportCategoryKey } from '../types';
 
-export function exportMembersExcel(members: Member[]) {
-  if (members.length === 0) { alert('내보낼 데이터가 없습니다.'); return; }
+export function exportMembersExcel(members: Member[]): boolean {
+  if (members.length === 0) return false;
   const data = members.map(m => ({
     이름: m.name, 기수: m.cohort, 직책: m.role, 연락처: m.phone, 이메일: m.email, 메모: m.memo,
   }));
@@ -12,10 +12,11 @@ export function exportMembersExcel(members: Member[]) {
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, '회원명부');
   XLSX.writeFile(wb, `IPSL_회원명부_${new Date().toISOString().slice(0, 10)}.xlsx`);
+  return true;
 }
 
-export function exportFeesExcel(members: Member[], fees: Fees, year: string) {
-  if (members.length === 0) { alert('내보낼 데이터가 없습니다.'); return; }
+export function exportFeesExcel(members: Member[], fees: Fees, year: string): boolean {
+  if (members.length === 0) return false;
   const data = members.map(m => {
     const row: Record<string, string | number> = { 이름: m.name, 기수: m.cohort || '' };
     let totalAmt = 0;
@@ -31,13 +32,15 @@ export function exportFeesExcel(members: Member[], fees: Fees, year: string) {
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, year + '년 회비');
   XLSX.writeFile(wb, `IPSL_회비관리_${year}.xlsx`);
+  return true;
 }
 
 export function exportToJSON(
   settings: Settings, members: Member[], fees: Fees,
   transactions: Transaction[], events: IEvent[], schedules: Schedule[] = [],
 ) {
-  const data = { settings, members, fees, transactions, events, schedules, exportDate: new Date().toISOString() };
+  const safeMembers = members.map(({ pin, ...rest }) => rest);
+  const data = { settings, members: safeMembers, fees, transactions, events, schedules, exportDate: new Date().toISOString() };
   const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
